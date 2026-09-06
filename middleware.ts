@@ -29,22 +29,48 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  // 중요: createServerClient와 supabase.auth.getUser() 사이에
-  // 다른 로직을 넣으면 세션이 풀릴 수 있으니 주의해야 해!
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 로그인하지 않은 유저가 보호된 라우트(대시보드, 레슨, 채팅 등)에 접근할 때 로그인 페이지로 리다이렉트
+  const { pathname } = request.nextUrl;
+
+  // 1. 변경된 관리자 로그인 페이지 자체는 미들웨어 검사에서 제외
+  if (pathname === "/admin-login") {
+    return supabaseResponse;
+  }
+
+  // 2. 로그인하지 않은 유저가 보호된 라우트에 접근할 때
   if (
     !user &&
-    (request.nextUrl.pathname.startsWith("/students") ||
-      request.nextUrl.pathname.startsWith("/tutors") ||
-      request.nextUrl.pathname.startsWith("/lessons") ||
-      request.nextUrl.pathname.startsWith("/chats"))
+    (pathname.startsWith("/students") ||
+      pathname.startsWith("/tutors") ||
+      pathname.startsWith("/admin") ||
+      pathname.startsWith("/tutor") ||
+      pathname.startsWith("/lessons") ||
+      pathname.startsWith("/chats"))
   ) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+
+    // admin이나 tutor 경로면 변경된 관리자 로그인 페이지로 리다이렉트
+    if (pathname.startsWith("/admin") || pathname.startsWith("/tutor")) {
+      url.pathname = "/admin-login";
+    } else {
+      url.pathname = "/login";
+    }
+
+    return NextResponse.redirect(url);
+  }
+
+  // 3. 로그인한 유저가 로그인 페이지에 접근하려고 할 때 튕겨내기
+  if (
+    user &&
+    (pathname === "/login" ||
+      pathname === "/admin-login" ||
+      pathname === "/signup")
+  ) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
     return NextResponse.redirect(url);
   }
 
@@ -53,13 +79,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder files (svg, png, jpg, etc.)
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
