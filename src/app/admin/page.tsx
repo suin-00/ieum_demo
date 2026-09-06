@@ -38,6 +38,26 @@ export default async function AdminDashboardPage() {
           </div>
         </Link>
 
+        <Link
+          href="/admin/students"
+          className="group block rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#0E2640] hover:shadow-md"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-slate-500">STUDENTS</p>
+              <h2 className="mt-2 text-xl font-bold text-[#0E2640]">
+                학생 관리
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                학생 계정과 학습 정보를 관리하세요.
+              </p>
+            </div>
+            <span className="text-xl text-slate-400 transition group-hover:translate-x-1 group-hover:text-[#0E2640]">
+              →
+            </span>
+          </div>
+        </Link>
+
         <AdminSystemStatus status={systemStatus} />
       </section>
     </main>

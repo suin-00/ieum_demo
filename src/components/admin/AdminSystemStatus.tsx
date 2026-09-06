@@ -41,6 +41,13 @@ export default function AdminSystemStatus({ status }: AdminSystemStatusProps) {
         </div>
 
         <div className="flex items-center justify-between py-3">
+          <p className="text-xs font-bold text-slate-500">등록된 학생</p>
+          <p className="text-lg font-bold text-[#0E2640]">
+            {status.studentCount === null ? "-" : `${status.studentCount}명`}
+          </p>
+        </div>
+
+        <div className="flex items-center justify-between py-3">
           <p className="text-xs font-bold text-slate-500">조회 상태</p>
           <p
             className={`text-sm font-semibold ${

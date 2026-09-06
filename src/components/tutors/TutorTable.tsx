@@ -5,10 +5,12 @@ import TutorDetailModal from "@/components/tutors/TutorDetailModal";
 import type { Tutor, TutorTableProps } from "@/types/tutor.types";
 import { useTutorActions } from "@/hooks/useTutorActions";
 import { useTutorSelection } from "@/hooks/useTutorSelection";
-import { useState } from "react";
+import { Search } from "lucide-react";
+import { useMemo, useState } from "react";
 
 export default function TutorTable({ tutors }: TutorTableProps) {
   const [detailTutor, setDetailTutor] = useState<Tutor | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const {
     selectedIds: selectedTutorIds,
     allSelected: allTutorsSelected,
@@ -19,6 +21,21 @@ export default function TutorTable({ tutors }: TutorTableProps) {
   const selectedTutor = tutors.find(
     (tutor) => tutor.id === selectedTutorIds[0],
   );
+  const filteredTutors = useMemo(() => {
+    const normalizedSearchTerm = searchTerm.trim().toLocaleLowerCase("ko-KR");
+
+    if (!normalizedSearchTerm) {
+      return tutors;
+    }
+
+    return tutors.filter((tutor) =>
+      [tutor.profiles?.name, tutor.profiles?.furigana]
+        .filter((value): value is string => Boolean(value))
+        .some((value) =>
+          value.toLocaleLowerCase("ko-KR").includes(normalizedSearchTerm),
+        ),
+    );
+  }, [searchTerm, tutors]);
   const {
     isDeleting,
     isEditing,
@@ -97,8 +114,28 @@ export default function TutorTable({ tutors }: TutorTableProps) {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 className="text-xl font-bold text-[#0E2640]">등록된 튜터 목록</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-5">
+          <h2 className="text-xl font-bold text-[#0E2640]">등록된 튜터 목록</h2>
+          <label className="sr-only" htmlFor="tutor-name-search">
+            튜터 이름 검색
+          </label>
+          <div className="relative">
+            <Search
+              size={14}
+              aria-hidden="true"
+              className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              id="tutor-name-search"
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="이름 검색"
+              className="w-32 rounded-md border border-slate-300 py-1 pl-7 pr-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-[#0E2640] focus:outline-none sm:w-40"
+            />
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() => openEditForm()}
@@ -151,12 +188,14 @@ export default function TutorTable({ tutors }: TutorTableProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-sm">
-            {tutors.length > 0 ? (
-              tutors.map(renderTutorRow)
+            {filteredTutors.length > 0 ? (
+              filteredTutors.map(renderTutorRow)
             ) : (
               <tr>
                 <td colSpan={8} className="py-8 text-center text-slate-400">
-                  등록된 튜터가 없습니다.
+                  {searchTerm
+                    ? "검색 결과가 없습니다."
+                    : "등록된 튜터가 없습니다."}
                 </td>
               </tr>
             )}

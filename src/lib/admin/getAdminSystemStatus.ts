@@ -5,6 +5,7 @@ export interface AdminSystemStatus {
   isAdminAuthenticated: boolean;
   hasDatabaseError: boolean;
   tutorCount: number | null;
+  studentCount: number | null;
   atUpdated: string;
 }
 
@@ -93,14 +94,24 @@ export async function getAdminSystemStatus(): Promise<AdminSystemStatus> {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { count: tutorCount, error } = await supabaseAdmin
-    .from("tutors")
-    .select("id", { count: "exact", head: true });
+  const [
+    { count: tutorCount, error: tutorError },
+    { count: studentCount, error: studentError },
+  ] = await Promise.all([
+    supabaseAdmin.from("tutors").select("id", { count: "exact", head: true }),
+    supabaseAdmin
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "student"),
+  ]);
+
+  const hasDatabaseError = Boolean(tutorError || studentError);
 
   return {
     isAdminAuthenticated: user?.email === "admin@ieum.com",
-    hasDatabaseError: Boolean(error),
-    tutorCount: error ? null : (tutorCount ?? 0),
+    hasDatabaseError,
+    tutorCount: hasDatabaseError ? null : (tutorCount ?? 0),
+    studentCount: hasDatabaseError ? null : (studentCount ?? 0),
     atUpdated: await getLastCommitTime(),
   };
 }
