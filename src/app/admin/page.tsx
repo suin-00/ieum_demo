@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 async function getLastCommitTime(): Promise<string> {
   try {
     const res = await fetch(
-      `https://api.github.com/repos/suin-00/ieum-demo/commits?per_page=1`,
+      `https://api.github.com/repos/suin-00/ieum_demo/commits?per_page=1`,
       {
         headers: {
           Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
