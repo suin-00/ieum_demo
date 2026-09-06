@@ -101,7 +101,7 @@ export default function TutorTable({ tutors }: TutorTableProps) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={openEditForm}
+            onClick={() => openEditForm()}
             disabled={selectedTutorIds.length !== 1}
             className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700 transition-colors hover:border-[#0E2640] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
@@ -109,7 +109,7 @@ export default function TutorTable({ tutors }: TutorTableProps) {
           </button>
           <button
             type="button"
-            onClick={handleDeleteSelected}
+            onClick={() => handleDeleteSelected()}
             disabled={isDeleting}
             className="rounded-md border border-red-200 px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
