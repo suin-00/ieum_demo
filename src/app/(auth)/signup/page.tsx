@@ -17,8 +17,15 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+
+    // 이름 공백 및 빈 값 검증 추가
+    if (!name.trim()) {
+      setError("이름을 공백 없이 올바르게 입력해 주세요.");
+      return;
+    }
+
+    setLoading(true);
 
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
@@ -26,7 +33,7 @@ export default function SignupPage() {
       options: {
         data: {
           role: "student",
-          name,
+          name: name.trim(), // 앞뒤 공백을 제거
         },
       },
     });

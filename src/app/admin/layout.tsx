@@ -1,6 +1,7 @@
 // app/admin/layout.tsx
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { ADMIN_EMAIL } from "@/costants/admin";
 
 export default async function AdminLayout({
   children,
@@ -13,9 +14,7 @@ export default async function AdminLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const ADMIN_EMAIL = "admin@ieum.com";
-
-  if (!user || user.email !== ADMIN_EMAIL) {
+  if (!user || !ADMIN_EMAILS.includes(user.email)) {
     redirect("/");
   }
 
