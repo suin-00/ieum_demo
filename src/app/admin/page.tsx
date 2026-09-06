@@ -11,6 +11,7 @@ async function getLastCommitTime(): Promise<string> {
         headers: {
           Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
           Accept: "vnd.github+json",
+          "User-Agent": "ieum-admin-dashboard", // 👈 GitHub API 필수 요구 사항
         },
         next: { revalidate: 60 },
       },
@@ -26,6 +27,8 @@ async function getLastCommitTime(): Promise<string> {
           timeZone: "Asia/Seoul",
         }).format(new Date(commitDate));
       }
+    } else {
+      console.error("GitHub API 응답 오류:", res.status, res.statusText);
     }
   } catch (error) {
     console.error("GitHub API 호출 에러:", error);
