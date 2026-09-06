@@ -1,13 +1,85 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 export default function ResetPasswordPage() {
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isSessionReady, setIsSessionReady] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    let isMounted = true;
+
+    async function prepareRecoverySession() {
+      const searchParams = new URLSearchParams(window.location.search);
+      const code = searchParams.get("code");
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
+      const isRecoveryHash =
+        hashParams.get("type") === "recovery" && accessToken && refreshToken;
+
+      if (!code && !isRecoveryHash) {
+        setMessage("비밀번호 변경 이메일의 링크로 접속해 주세요.");
+        return;
+      }
+
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+        if (error) {
+          if (isMounted) {
+            setMessage(
+              `비밀번호 변경 링크가 유효하지 않습니다: ${error.message}`,
+            );
+          }
+          return;
+        }
+      }
+
+      if (isRecoveryHash && accessToken && refreshToken) {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (error) {
+          if (isMounted) {
+            setMessage(
+              `비밀번호 변경 링크가 유효하지 않습니다: ${error.message}`,
+            );
+          }
+          return;
+        }
+      }
+
+      const { data, error } = await supabase.auth.getSession();
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (error || !data.session) {
+        setMessage("비밀번호 변경 링크를 통해 다시 접속해 주세요.");
+        return;
+      }
+
+      setIsSessionReady(true);
+    }
+
+    void prepareRecoverySession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -37,6 +109,7 @@ export default function ResetPasswordPage() {
     if (!error) {
       setPassword("");
       setConfirmPassword("");
+      window.setTimeout(() => router.push("/"), 1500);
     }
   }
 
@@ -73,10 +146,14 @@ export default function ResetPasswordPage() {
           </label>
           <button
             type="submit"
-            disabled={isSaving}
+            disabled={isSaving || !isSessionReady}
             className="rounded-xl bg-[#0E2640] py-3 text-sm font-bold text-white disabled:opacity-50"
           >
-            {isSaving ? "변경 중..." : "비밀번호 변경"}
+            {isSaving
+              ? "변경 중..."
+              : isSessionReady
+                ? "비밀번호 변경"
+                : "링크 확인 중..."}
           </button>
         </form>
 
