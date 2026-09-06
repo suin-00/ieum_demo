@@ -2,21 +2,35 @@ import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
-function formatAtUpdated(value: string | undefined): string {
-  if (!value) {
-    return "정보 없음";
+// GitHub API로 최신 커밋 시간을 직접 가져오는 함수
+async function getLastCommitTime(): Promise<string> {
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/suin-00/ieum-demo/commits?per_page=1`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+          Accept: "vnd.github+json",
+        },
+        next: { revalidate: 60 },
+      },
+    );
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.length > 0) {
+        const commitDate = data[0].commit.committer.date;
+        return new Intl.DateTimeFormat("ko-KR", {
+          dateStyle: "medium",
+          timeStyle: "short",
+          timeZone: "Asia/Seoul",
+        }).format(new Date(commitDate));
+      }
+    }
+  } catch (error) {
+    console.error("GitHub API 호출 에러:", error);
   }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "정보 없음";
-  }
-
-  return new Intl.DateTimeFormat("ko-KR", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
+  return "정보 없음";
 }
 
 export default async function AdminDashboardPage() {
@@ -31,10 +45,9 @@ export default async function AdminDashboardPage() {
 
   const isAdminAuthenticated = user?.email === "admin@ieum.com";
   const hasDatabaseError = Boolean(tutorQueryError);
-  const atUpdated = formatAtUpdated(
-    process.env.VERCEL_GIT_COMMIT_COMMITTED_AT ??
-      process.env.GIT_COMMIT_COMMITTED_AT,
-  );
+
+  // Vercel 환경 변수 대신 GitHub API 호출 함수 실행 결과를 대입
+  const atUpdated = await getLastCommitTime();
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
