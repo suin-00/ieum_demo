@@ -76,7 +76,7 @@ export default async function AdminDashboardPage() {
             <div className="flex items-center justify-between py-3 first:pt-0">
               <p className="text-xs font-bold text-slate-500">관리자 인증</p>
               <p
-                className={`mt-2 text-sm font-semibold ${
+                className={`text-sm font-semibold ${
                   isAdminAuthenticated ? "text-emerald-600" : "text-red-600"
                 }`}
               >
@@ -86,7 +86,7 @@ export default async function AdminDashboardPage() {
             <div className="flex items-center justify-between py-3">
               <p className="text-xs font-bold text-slate-500">Supabase DB</p>
               <p
-                className={`mt-2 text-sm font-semibold ${
+                className={`text-sm font-semibold ${
                   hasDatabaseError ? "text-red-600" : "text-emerald-600"
                 }`}
               >
@@ -95,14 +95,14 @@ export default async function AdminDashboardPage() {
             </div>
             <div className="flex items-center justify-between py-3">
               <p className="text-xs font-bold text-slate-500">등록된 튜터</p>
-              <p className="mt-2 text-lg font-bold text-[#0E2640]">
+              <p className="text-lg font-bold text-[#0E2640]">
                 {hasDatabaseError ? "-" : `${tutorCount ?? 0}명`}
               </p>
             </div>
             <div className="flex items-center justify-between py-3">
               <p className="text-xs font-bold text-slate-500">조회 상태</p>
               <p
-                className={`mt-2 text-sm font-semibold ${
+                className={`text-sm font-semibold ${
                   hasDatabaseError ? "text-red-600" : "text-emerald-600"
                 }`}
               >
@@ -111,7 +111,7 @@ export default async function AdminDashboardPage() {
             </div>
             <div className="flex items-center justify-between py-3 last:pb-0">
               <p className="text-xs font-bold text-slate-500">at_updated</p>
-              <p className="mt-2 text-sm font-semibold text-slate-700">
+              <p className="text-sm font-semibold text-slate-700">
                 {atUpdated}
               </p>
             </div>
