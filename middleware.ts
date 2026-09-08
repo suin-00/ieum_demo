@@ -70,7 +70,7 @@ export async function middleware(request: NextRequest) {
       pathname === "/signup")
   ) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/students";
     return NextResponse.redirect(url);
   }
 
