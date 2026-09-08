@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
-export default async function TutorLayout({
+export default async function StudentLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -17,7 +17,7 @@ export default async function TutorLayout({
     redirect("/login");
   }
 
-  // 2. profiles 또는 tutors 테이블에서 이 유저가 정말 'tutor' role인지 확인
+  // 2. profiles 또는 students 테이블에서 이 유저가 정말 'student' role인지 확인
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
@@ -26,7 +26,7 @@ export default async function TutorLayout({
 
   // 만약 역할이 student가 아니라면 접근 차단 (튜터가 학생 페이지로 온 경우 등)
   if (!profile || profile.role !== "student") {
-    redirect("/students"); // 또는 권한 없음 페이지나 홈으로
+    redirect("/tutors"); // 또는 권한 없음 페이지나 홈으로
   }
 
   return <>{children}</>;

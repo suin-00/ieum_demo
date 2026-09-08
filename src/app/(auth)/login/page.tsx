@@ -50,16 +50,32 @@ export default function LoginPage() {
         return;
       }
 
-      const { data: profileData, error: profileError } = await supabase
+      const { data: profileData } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", authData.user.id)
         .single();
 
+      if (!profileData) {
+        setError("사용자 프로필 정보를 찾을 수 없습니다.");
+        setLoading(false);
+        return;
+      }
+
       if (profileData.role === "tutor") {
         router.push("/tutors");
       } else if (profileData.role === "student") {
-        router.push("/students");
+        const { data: matchData } = await supabase
+          .from("matches")
+          .select("id")
+          .eq("student_id", authData.user.id)
+          .maybeSingle();
+
+        if (matchData) {
+          router.push("/students");
+        } else {
+          router.push("/students/matching");
+        }
       }
     }
     setLoading(false);

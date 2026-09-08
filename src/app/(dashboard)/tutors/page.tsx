@@ -1,13 +1,69 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+interface MatchedStudent {
+  matchId: string;
+  id: string;
+  name: string;
+  plan: string;
+  school: string;
+  major: string;
+}
+
+interface ActiveLessonStudent {
+  lessonId: string;
+  matchId: string;
+  id: string;
+  name: string;
+  school: string;
+  major: string;
+  sessionNumber: number;
+  scheduledAt: string | null;
+  plan: string;
+}
+
+interface RawProfile {
+  name: string | null;
+}
+
+interface RawStudent {
+  school: string | null;
+  major: string | null;
+  profiles: RawProfile | RawProfile[] | null;
+}
+
+interface RawMatch {
+  id: string;
+  plan_sessions: number;
+  status: string;
+  student_id: string;
+  students: RawStudent | null;
+}
+
+interface RawLessonMatch {
+  plan_sessions: number;
+  student_id: string;
+  students: RawStudent | null;
+}
+
+interface RawLesson {
+  id: string;
+  match_id: string;
+  session_number: number;
+  scheduled_at: string | null;
+  status: string;
+  matches: RawLessonMatch | null;
+}
+
 export default function TutorDashboardPage() {
-  const [matchedStudents, setMatchedStudents] = useState<any[]>([]);
-  const [activeLessonStudents, setActiveLessonStudents] = useState<any[]>([]);
+  const [matchedStudents, setMatchedStudents] = useState<MatchedStudent[]>([]);
+  const [activeLessonStudents, setActiveLessonStudents] = useState<
+    ActiveLessonStudent[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [feedbacks, setFeedbacks] = useState<{ [key: string]: string }>({});
   const [loadingComplete, setLoadingComplete] = useState<string | null>(null);
@@ -15,11 +71,9 @@ export default function TutorDashboardPage() {
   const router = useRouter();
   const supabase = createClient();
 
-  // 데이터 로드 함수
-  const fetchData = async () => {
-    setLoading(true);
+  // 데이터 로드 함수 (컴포넌트 내부 상태 조작용)
+  const fetchData = useCallback(async () => {
     try {
-      // 1. 현재 로그인한 튜터 정보 가져오기
       const {
         data: { user },
         error: userError,
@@ -27,11 +81,9 @@ export default function TutorDashboardPage() {
 
       if (userError || !user) {
         console.error("사용자 인증 정보가 없습니다.");
-        setLoading(false);
         return;
       }
 
-      // 2. [현재 매칭된 학생 목록] 조회
       const { data: matchData, error: matchError } = await supabase
         .from("matches")
         .select(
@@ -55,18 +107,26 @@ export default function TutorDashboardPage() {
       if (matchError) {
         console.error("매칭된 학생 조회 실패:", matchError.message);
       } else if (matchData) {
-        const formattedMatches = matchData.map((match: any) => ({
-          matchId: match.id,
-          id: match.student_id,
-          name: match.students?.profiles?.name || "학생",
-          plan: `${match.plan_sessions}회 수업 플랜`,
-          school: match.students?.school || "학교 미입력",
-          major: match.students?.major || "전공 미입력",
-        }));
+        const typedMatchData = matchData as unknown as RawMatch[];
+        const formattedMatches: MatchedStudent[] = typedMatchData.map(
+          (match) => {
+            const profileObj = Array.isArray(match.students?.profiles)
+              ? match.students?.profiles[0]
+              : match.students?.profiles;
+
+            return {
+              matchId: match.id,
+              id: match.student_id,
+              name: profileObj?.name || "학생",
+              plan: `${match.plan_sessions}회 수업 플랜`,
+              school: match.students?.school || "학교 미입력",
+              major: match.students?.major || "전공 미입력",
+            };
+          },
+        );
         setMatchedStudents(formattedMatches);
 
-        // 3. [현재 수업 중인 학생 목록] 조회
-        const matchIds = matchData.map((m: any) => m.id);
+        const matchIds = typedMatchData.map((m) => m.id);
 
         if (matchIds.length > 0) {
           const { data: lessonData, error: lessonError } = await supabase
@@ -92,39 +152,61 @@ export default function TutorDashboardPage() {
             `,
             )
             .in("match_id", matchIds)
-            .eq("status", "scheduled"); // 예정된(진행 중인) 수업
+            .eq("status", "scheduled");
 
           if (lessonError) {
             console.error("수업 중인 학생 조회 실패:", lessonError.message);
           } else if (lessonData) {
-            const formattedLessons = lessonData.map((lesson: any) => ({
-              lessonId: lesson.id,
-              matchId: lesson.match_id,
-              id: lesson.matches?.students?.id,
-              name: lesson.matches?.students?.profiles?.name || "학생",
-              school: lesson.matches?.students?.school || "학교 미입력",
-              major: lesson.matches?.students?.major || "전공 미입력",
-              sessionNumber: lesson.session_number,
-              scheduledAt: lesson.scheduled_at,
-              plan: `${lesson.matches?.plan_sessions}회 플랜 중`,
-            }));
+            const typedLessonData = lessonData as unknown as RawLesson[];
+            const formattedLessons: ActiveLessonStudent[] = typedLessonData.map(
+              (lesson) => {
+                const profileObj = Array.isArray(
+                  lesson.matches?.students?.profiles,
+                )
+                  ? lesson.matches?.students?.profiles[0]
+                  : lesson.matches?.students?.profiles;
+
+                return {
+                  lessonId: lesson.id,
+                  matchId: lesson.match_id,
+                  id: lesson.matches?.student_id || "",
+                  name: profileObj?.name || "학생",
+                  school: lesson.matches?.students?.school || "학교 미입력",
+                  major: lesson.matches?.students?.major || "전공 미입력",
+                  sessionNumber: lesson.session_number,
+                  scheduledAt: lesson.scheduled_at,
+                  plan: `${lesson.matches?.plan_sessions}회 플랜 중`,
+                };
+              },
+            );
             setActiveLessonStudents(formattedLessons);
           }
         }
       }
     } catch (err) {
       console.error("예외 발생:", err);
-    } finally {
-      setLoading(false);
     }
-  };
-
-  // 컴포넌트 마운트 시 데이터 로드
-  useEffect(() => {
-    fetchData();
   }, [supabase]);
 
-  // 로그아웃 핸들러
+  // useEffect 내에서는 비동기 함수 실행만 처리하고 직접 setState를 호출하지 않음
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadInitialData = async () => {
+      setLoading(true);
+      await fetchData();
+      if (isMounted) {
+        setLoading(false);
+      }
+    };
+
+    loadInitialData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchData]);
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -135,14 +217,11 @@ export default function TutorDashboardPage() {
     }
   };
 
-  // 피드백 입력 핸들러
   const handleFeedbackChange = (key: string, value: string) => {
     setFeedbacks((prev) => ({ ...prev, [key]: value }));
   };
 
-  // 수업 완료 처리 핸들러 (lessons의 status를 completed로 변경)
   const handleCompleteLesson = async (lessonId: string, uniqueKey: string) => {
-    const feedbackText = feedbacks[uniqueKey] || "";
     setLoadingComplete(uniqueKey);
 
     try {
@@ -160,7 +239,7 @@ export default function TutorDashboardPage() {
       } else {
         alert("수업이 완료 처리되었습니다!");
         setFeedbacks((prev) => ({ ...prev, [uniqueKey]: "" }));
-        fetchData(); // 목록 새로고침
+        await fetchData();
       }
     } catch (err) {
       console.error("예외 발생:", err);
@@ -171,7 +250,6 @@ export default function TutorDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 상단 네비게이션 바 */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">튜터 대시보드</h1>
@@ -188,7 +266,6 @@ export default function TutorDashboardPage() {
             >
               계정 수정
             </Link>
-            {/* 로그아웃 버튼 */}
             <button
               onClick={handleLogout}
               className="text-sm font-medium text-gray-700 hover:text-gray-900"
@@ -199,7 +276,6 @@ export default function TutorDashboardPage() {
         </div>
       </header>
 
-      {/* 메인 컨텐츠 영역 */}
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-12">
         {loading ? (
           <div className="text-center py-12 text-gray-500">
@@ -207,7 +283,6 @@ export default function TutorDashboardPage() {
           </div>
         ) : (
           <>
-            {/* 섹션 1: 현재 매칭된 학생 목록 (위로 배치) */}
             <section>
               <div className="mb-6">
                 <h2 className="text-xl font-semibold text-gray-800">
@@ -251,7 +326,6 @@ export default function TutorDashboardPage() {
               )}
             </section>
 
-            {/* 섹션 2: 현재 수업 중인 학생 목록 (아래로 배치) */}
             <section>
               <div className="mb-6">
                 <h2 className="text-xl font-semibold text-gray-800">
@@ -295,7 +369,6 @@ export default function TutorDashboardPage() {
                           </span>
                         </div>
 
-                        {/* 피드백 작성 입력창 */}
                         <div className="mb-4 mt-4">
                           <label className="block text-xs font-medium text-gray-700 mb-1">
                             수업 후 피드백 작성
@@ -315,7 +388,6 @@ export default function TutorDashboardPage() {
                         </div>
                       </div>
 
-                      {/* 수업 완료 처리 버튼 */}
                       <button
                         onClick={() =>
                           handleCompleteLesson(lesson.lessonId, lesson.lessonId)
