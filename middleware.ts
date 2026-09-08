@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // 1. 변경된 관리자 로그인 페이지 자체는 미들웨어 검사에서 제외
+  // 1. 관리자 로그인 페이지는 미들웨어 검사 제외
   if (pathname === "/admin-login") {
     return supabaseResponse;
   }
@@ -52,7 +52,6 @@ export async function middleware(request: NextRequest) {
   ) {
     const url = request.nextUrl.clone();
 
-    // admin이나 tutor 경로면 변경된 관리자 로그인 페이지로 리다이렉트
     if (pathname.startsWith("/admin") || pathname.startsWith("/tutor")) {
       url.pathname = "/admin-login";
     } else {
@@ -62,13 +61,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 3. 로그인한 유저가 로그인 페이지에 접근하려고 할 때 튕겨내기
-  if (
-    user &&
-    (pathname === "/login" ||
-      pathname === "/admin-login" ||
-      pathname === "/signup")
-  ) {
+  // 3. 로그인한 유저가 일반 로그인 / 관리자 로그인 페이지에 접근할 때만 튕겨내기 (/signup은 허용)
+  if (user && (pathname === "/login" || pathname === "/admin-login")) {
     const url = request.nextUrl.clone();
     url.pathname = "/students";
     return NextResponse.redirect(url);
