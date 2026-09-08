@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import IntroSection from "@/components/students/matching/IntroSection";
-import TutorListSection from "@/components/students/matching/TutorListSection";
 import ProfileEditSection from "@/components/students/matching/ProfileEditSection";
+import TutorListSection from "@/components/students/matching/TutorListSection";
+import MatchSection from "@/components/students/matching/MatchSection";
 
 export default async function StudentMatchingPage() {
   const supabase = await createClient();
@@ -30,16 +31,14 @@ export default async function StudentMatchingPage() {
     .eq("id", user.id)
     .single();
 
-  // 3. 튜터 목록 조회 (매칭 신청을 위해 전체 튜터 리스트 가져오기)
+  // 3. 튜터 목록 조회
   const { data: tutors } = await supabase
     .from("profiles")
     .select("*")
     .eq("role", "tutor");
 
   return (
-    // 화면 전체를 흰색 배경으로 꽉 채우는 래퍼
     <div className="min-h-screen w-full bg-white text-black py-8 px-4">
-      {/* 실제 콘텐츠가 들어갈 최대 폭 제한 박스 */}
       <div className="max-w-4xl mx-auto space-y-12">
         <h1 className="text-2xl font-bold">과외 매칭 대기실</h1>
 
@@ -49,15 +48,21 @@ export default async function StudentMatchingPage() {
         </section>
 
         {/* 2. 프로필 정보 수정 */}
-        <section className="border p-6 rounded-lg bg-white shadow-sm">
-          <h2 className="text-xl font-semibold mb-4">내 프로필 정보</h2>
+        <section className="border p-6 rounded-lg bg-white shadow-sm space-y-4">
+          <h2 className="text-xl font-semibold">내 프로필 정보 수정</h2>
           <ProfileEditSection initialProfile={profile} />
         </section>
 
-        {/* 3. 튜터 목록 및 4. 매칭 기능 */}
-        <section className="border p-6 rounded-lg bg-white shadow-sm">
-          <h2 className="text-xl font-semibold mb-4">튜터 목록 및 매칭 신청</h2>
-          <TutorListSection tutors={tutors || []} studentId={user.id} />
+        {/* 3. 튜터 목록 */}
+        <section className="border p-6 rounded-lg bg-white shadow-sm space-y-4">
+          <h2 className="text-xl font-semibold">튜터 목록</h2>
+          <TutorListSection tutors={tutors || []} />
+        </section>
+
+        {/* 4. 매칭 기능 */}
+        <section className="border p-6 rounded-lg bg-white shadow-sm space-y-4">
+          <h2 className="text-xl font-semibold">매칭 신청</h2>
+          <MatchSection tutors={tutors || []} studentId={user.id} />
         </section>
       </div>
     </div>

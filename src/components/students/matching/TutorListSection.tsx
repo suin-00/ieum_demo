@@ -1,10 +1,15 @@
+// 튜터 프로필 타입 정의
 interface Tutor {
   id: string;
   name: string | null;
   email: string | null;
 }
 
-export default function TutorList({ tutors }: { tutors: Tutor[] }) {
+interface TutorListSectionProps {
+  tutors: Tutor[];
+}
+
+export default function TutorListSection({ tutors }: TutorListSectionProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {tutors.length === 0 ? (
@@ -13,10 +18,12 @@ export default function TutorList({ tutors }: { tutors: Tutor[] }) {
         tutors.map((tutor) => (
           <div
             key={tutor.id}
-            className="border p-4 rounded bg-gray-50 space-y-1"
+            className="border p-4 rounded flex justify-between items-center bg-gray-50"
           >
-            <p className="font-bold">{tutor.name || "이름 없음"} 튜터</p>
-            <p className="text-sm text-gray-500">{tutor.email}</p>
+            <div>
+              <p className="font-bold">{tutor.name || "이름 없음"} 튜터</p>
+              <p className="text-sm text-gray-500">{tutor.email}</p>
+            </div>
           </div>
         ))
       )}
