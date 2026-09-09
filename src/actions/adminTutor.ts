@@ -14,15 +14,20 @@ export async function createTutorAccount(
   try {
     const tempPassword = "qwerty123";
 
-    // 1. Supabase Auth 계정 생성 (user_metadata에 이름 추가)
+    // ✅ 띄어쓰기 없이 성 + 이름 결합
+    const fullName = `${formData.last_name ?? ""}${formData.first_name ?? ""}`;
+
+    // 1. Supabase Auth 계정 생성
     const { data: authData, error: authError } =
       await supabaseAdmin.auth.admin.createUser({
         email: formData.email,
         password: tempPassword,
         email_confirm: true,
         user_metadata: {
-          sub: "", // Supabase가 생성 후 자동 할당하므로 비워두거나 생략해도 무방합니다
-          name: formData.name,
+          sub: "",
+          last_name: formData.last_name,
+          first_name: formData.first_name,
+          nickname: fullName, // 닉네임 자동 설정 (띄어쓰기 없음)
           furigana: formData.furigana,
           gender: formData.gender,
           role: "tutor",
@@ -45,7 +50,9 @@ export async function createTutorAccount(
         {
           id: userId,
           email: formData.email,
-          name: formData.name,
+          last_name: formData.last_name,
+          first_name: formData.first_name,
+          nickname: fullName, // 닉네임 자동 설정 (띄어쓰기 없음)
           furigana: formData.furigana,
           gender: formData.gender,
           role: "tutor",
@@ -146,10 +153,15 @@ export async function updateTutorAccount(
   formData: UpdateTutorInput,
 ): Promise<TutorActionResult> {
   try {
+    // ✅ 띄어쓰기 없이 성 + 이름 결합
+    const fullName = `${formData.last_name ?? ""}${formData.first_name ?? ""}`;
+
     const { error: profileError } = await supabaseAdmin
       .from("profiles")
       .update({
-        name: formData.name,
+        last_name: formData.last_name,
+        first_name: formData.first_name,
+        nickname: fullName, // 닉네임 자동 갱신 (띄어쓰기 없음)
         furigana: formData.furigana,
         gender: formData.gender,
       })
