@@ -75,7 +75,10 @@ export default function TutorForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <TutorFormField name="email" label="이메일" type="email" />
-      <TutorFormField name="name" label="이름" />
+      <div className="grid grid-cols-2 gap-2">
+        <TutorFormField name="last_name" label="성" />
+        <TutorFormField name="first_name" label="이름" />
+      </div>
       <TutorFormField name="furigana" label="이름 후리가나" />
       <fieldset>
         <legend className="block text-xs font-bold text-slate-600 mb-1">
