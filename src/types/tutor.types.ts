@@ -2,9 +2,12 @@ export type TutorGender = "male" | "female";
 
 export interface TutorProfile {
   email: string | null;
-  name: string | null;
+  nickname: string | null;
+  first_name: string | null;
+  last_name: string | null;
   furigana: string | null;
   gender: TutorGender | null;
+  created_at: string | null;
 }
 
 export interface Tutor {

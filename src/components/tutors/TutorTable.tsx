@@ -29,7 +29,7 @@ export default function TutorTable({ tutors }: TutorTableProps) {
     }
 
     return tutors.filter((tutor) =>
-      [tutor.profiles?.name, tutor.profiles?.furigana]
+      [tutor.profiles?.nickname, tutor.profiles?.furigana]
         .filter((value): value is string => Boolean(value))
         .some((value) =>
           value.toLocaleLowerCase("ko-KR").includes(normalizedSearchTerm),
@@ -66,13 +66,13 @@ export default function TutorTable({ tutors }: TutorTableProps) {
             value={tutor.id}
             checked={selectedTutorIds.includes(tutor.id)}
             onChange={() => toggleTutor(tutor.id)}
-            aria-label={`${tutor.profiles?.name ?? "이름 없음"} 선택`}
+            aria-label={`${tutor.profiles?.nickname ?? "이름 없음"} 선택`}
             className="h-4 w-4 accent-[#0E2640]"
           />
         </td>
         <td className="h-10 overflow-hidden px-2 py-0 font-bold text-slate-800 align-middle">
           <div className="truncate text-xs leading-4">
-            {tutor.profiles?.name ?? "이름 없음"}
+            {tutor.profiles?.nickname ?? "이름 없음"}
           </div>
           <div className="truncate text-[10px] font-normal leading-3 text-slate-400">
             {tutor.profiles?.furigana}
