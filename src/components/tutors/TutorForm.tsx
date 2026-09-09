@@ -40,7 +40,8 @@ export default function TutorForm() {
     try {
       const data: CreateTutorInput = {
         email: getRequiredString(formData, "email"),
-        name: getRequiredString(formData, "name"),
+        first_name: getRequiredString(formData, "first_name"),
+        last_name: getRequiredString(formData, "last_name"),
         furigana: getRequiredString(formData, "furigana"),
         gender: getTutorGender(formData),
         school: getRequiredString(formData, "school"),
