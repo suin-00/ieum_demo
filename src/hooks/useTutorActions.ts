@@ -49,7 +49,7 @@ export function useTutorActions({
     }
 
     setEditForm({
-      name: tutor.profiles?.name ?? "",
+      name: tutor.profiles?.nickname ?? "",
       furigana: tutor.profiles?.furigana ?? "",
       gender: tutor.profiles?.gender ?? "male",
       school: tutor.school ?? "",

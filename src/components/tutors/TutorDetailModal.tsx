@@ -46,7 +46,7 @@ export default function TutorDetailModal({
               id="tutor-detail-title"
               className="text-2xl font-bold text-[#0E2640]"
             >
-              {profile?.name ?? "이름 없음"} 상세 정보
+              {profile?.nickname ?? "이름 없음"} 상세 정보
             </h2>
             <p className="mt-1 text-sm text-slate-500">
               {profile?.furigana ?? "후리가나 없음"}
