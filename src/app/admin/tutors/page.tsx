@@ -7,11 +7,15 @@ import Link from "next/link";
 export default async function AdminTutorsPage() {
   const { data: tutors, error } = await supabaseAdmin
     .from("tutors")
-    .select("*, profiles(email, name, furigana, gender)");
+    // ✅ 1. name 대신 nickname을 포함한 바뀐 컬럼명들(또는 profiles(*))로 수정
+    .select(
+      "*, profiles(email, nickname, first_name, last_name, furigana, gender)",
+    );
 
   const sortedTutors = [...(tutors ?? [])].sort((leftTutor, rightTutor) =>
-    (leftTutor.profiles?.name ?? "").localeCompare(
-      rightTutor.profiles?.name ?? "",
+    // ✅ 2. 정렬 기준도 name 대신 nickname으로 변경
+    (leftTutor.profiles?.nickname ?? "").localeCompare(
+      rightTutor.profiles?.nickname ?? "",
       "ko",
     ),
   );
