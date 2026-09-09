@@ -24,6 +24,7 @@ export interface CreateTutorInput {
   email: string;
   first_name: string;
   last_name: string;
+  nickname?: string | null;
   furigana: string;
   gender: TutorGender;
   school: string;

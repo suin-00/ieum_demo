@@ -21,19 +21,37 @@ export default function TutorEditForm({
   return (
     <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
       <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
-        <input
-          value={value.name}
-          onChange={(event) => onChange({ ...value, name: event.target.value })}
-          required
-          aria-label="이름"
-          className="rounded-lg border p-2 text-sm text-slate-900"
-        />
+        {/* 성과 이름을 나란히 배치 */}
+        <div className="grid grid-cols-2 gap-2 sm:col-span-2">
+          <input
+            value={value.last_name ?? ""}
+            onChange={(event) =>
+              onChange({ ...value, last_name: event.target.value })
+            }
+            required
+            placeholder="성"
+            aria-label="성"
+            className="rounded-lg border p-2 text-sm text-slate-900"
+          />
+          <input
+            value={value.first_name ?? ""}
+            onChange={(event) =>
+              onChange({ ...value, first_name: event.target.value })
+            }
+            required
+            placeholder="이름"
+            aria-label="이름"
+            className="rounded-lg border p-2 text-sm text-slate-900"
+          />
+        </div>
+
         <input
           value={value.furigana}
           onChange={(event) =>
             onChange({ ...value, furigana: event.target.value })
           }
           required
+          placeholder="후리가나"
           aria-label="후리가나"
           className="rounded-lg border p-2 text-sm text-slate-900"
         />
@@ -63,6 +81,7 @@ export default function TutorEditForm({
             onChange({ ...value, school: event.target.value })
           }
           required
+          placeholder="대학교"
           aria-label="대학교"
           className="rounded-lg border p-2 text-sm text-slate-900"
         />
@@ -72,6 +91,7 @@ export default function TutorEditForm({
             onChange({ ...value, major: event.target.value })
           }
           required
+          placeholder="전공"
           aria-label="전공"
           className="rounded-lg border p-2 text-sm text-slate-900"
         />
@@ -81,6 +101,7 @@ export default function TutorEditForm({
             onChange({ ...value, style: event.target.value })
           }
           required
+          placeholder="수업 스타일"
           aria-label="수업 스타일"
           className="rounded-lg border p-2 text-sm text-slate-900"
         />
@@ -89,6 +110,7 @@ export default function TutorEditForm({
           onChange={(event) => onChange({ ...value, mbti: event.target.value })}
           required
           maxLength={4}
+          placeholder="MBTI"
           aria-label="MBTI"
           className="rounded-lg border p-2 text-sm text-slate-900"
         />
@@ -97,6 +119,7 @@ export default function TutorEditForm({
           onChange={(event) => onChange({ ...value, bio: event.target.value })}
           required
           rows={2}
+          placeholder="한줄 소개"
           aria-label="소개"
           className="rounded-lg border p-2 text-sm text-slate-900 sm:col-span-2"
         />
