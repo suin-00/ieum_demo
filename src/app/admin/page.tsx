@@ -1,5 +1,5 @@
 import Link from "next/link";
-import AdminSystemStatus from "@/components/admin/AdminSystemStatus";
+import AdminSystemStatus from "@/app/admin/_components/AdminSystemStatus";
 import { getAdminSystemStatus } from "@/lib/admin/getAdminSystemStatus";
 
 export default async function AdminDashboardPage() {
