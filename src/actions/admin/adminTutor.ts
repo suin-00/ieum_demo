@@ -8,6 +8,22 @@ import type {
   UpdateTutorInput,
 } from "@/types/tutor.types";
 
+const ALLOWED_STYLES = [
+  "課外活動・インターン・キャリア",
+  "サークル活動",
+  "大学文化・学園祭",
+  "学業・勉強",
+  "韓国生活・遊び",
+];
+
+// 헬퍼 함수 추가 (유효한 스타일만 필터링)
+function sanitizeStyles(styles: unknown): string[] {
+  if (!Array.isArray(styles)) return [];
+  return styles.filter(
+    (s): s is string => typeof s === "string" && ALLOWED_STYLES.includes(s),
+  );
+}
+
 export async function createTutorAccount(
   formData: CreateTutorInput,
 ): Promise<TutorActionResult> {
@@ -30,6 +46,7 @@ export async function createTutorAccount(
           nickname: fullName, // 닉네임 자동 설정 (띄어쓰기 없음)
           furigana: formData.furigana,
           gender: formData.gender,
+          birth_date: formData.birth_date,
           role: "tutor",
           email: formData.email,
           email_verified: true,
@@ -55,6 +72,7 @@ export async function createTutorAccount(
           nickname: fullName, // 닉네임 자동 설정 (띄어쓰기 없음)
           furigana: formData.furigana,
           gender: formData.gender,
+          birth_date: formData.birth_date, // 👈 여기에 birth_date 추가
           role: "tutor",
         },
       ]);
@@ -70,7 +88,7 @@ export async function createTutorAccount(
         id: userId,
         school: formData.school,
         major: formData.major,
-        style: formData.style,
+        style: sanitizeStyles(formData.style),
         mbti: formData.mbti,
         bio: formData.bio,
         rating: 0.0,
@@ -164,6 +182,7 @@ export async function updateTutorAccount(
         nickname: fullName, // 닉네임 자동 갱신 (띄어쓰기 없음)
         furigana: formData.furigana,
         gender: formData.gender,
+        birth_date: formData.birth_date, // 👈 여기에 birth_date 추가
       })
       .eq("id", tutorId);
 
@@ -176,7 +195,7 @@ export async function updateTutorAccount(
       .update({
         school: formData.school,
         major: formData.major,
-        style: formData.style,
+        style: sanitizeStyles(formData.style),
         mbti: formData.mbti,
         bio: formData.bio,
       })

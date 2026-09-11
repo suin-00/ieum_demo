@@ -10,6 +10,23 @@ interface TutorDetailModalProps {
   onDelete: () => void;
 }
 
+// 생년월일로 만 나이 계산하는 함수
+function calculateAge(birthDateString: string | null): string {
+  if (!birthDateString) return "-";
+
+  const birthDate = new Date(birthDateString);
+  const today = new Date();
+
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+
+  return `만 ${age}세 (${birthDateString})`;
+}
+
 export default function TutorDetailModal({
   tutor,
   onClose,
@@ -74,6 +91,14 @@ export default function TutorDetailModal({
             <dd className="mt-1 text-slate-900">{gender}</dd>
           </div>
           <div>
+            <dt className="text-xs font-bold text-slate-500">
+              생년월일 / 나이
+            </dt>
+            <dd className="mt-1 text-slate-900">
+              {calculateAge(profile?.birth_date ?? null)}
+            </dd>
+          </div>
+          <div>
             <dt className="text-xs font-bold text-slate-500">대학교</dt>
             <dd className="mt-1 text-slate-900">{tutor.school ?? "-"}</dd>
           </div>
@@ -83,7 +108,26 @@ export default function TutorDetailModal({
           </div>
           <div>
             <dt className="text-xs font-bold text-slate-500">수업 스타일</dt>
-            <dd className="mt-1 text-slate-900">{tutor.style ?? "-"}</dd>
+            <dd className="mt-1 text-slate-900">
+              {Array.isArray(tutor.style) && tutor.style.length > 0 ? (
+                <div className="flex flex-col gap-1">
+                  {tutor.style.map((styleItem) => (
+                    <div key={styleItem} className="flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                      <span>{styleItem}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : typeof tutor.style === "string" &&
+                (tutor.style as unknown as string).trim() !== "" ? (
+                <div className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                  <span>{tutor.style}</span>
+                </div>
+              ) : (
+                "-"
+              )}
+            </dd>
           </div>
           <div>
             <dt className="text-xs font-bold text-slate-500">MBTI</dt>

@@ -1,7 +1,7 @@
 interface TutorFormFieldProps {
   name: string;
   label: string;
-  type?: "email" | "text";
+  type?: "email" | "text" | "date";
   maxLength?: number;
 }
 

@@ -3,8 +3,20 @@
 import { useState, type FormEvent } from "react";
 import { createTutorAccount } from "@/actions/admin/adminTutor";
 import TutorFormField from "@/app/admin/_components/TutorFormField";
-import type { CreateTutorInput, TutorGender } from "@/types/tutor.types";
+import type {
+  CreateTutorInput,
+  TutorGender,
+  TutorStyle,
+} from "@/types/tutor.types";
 import { useRouter } from "next/navigation";
+
+const TUTOR_STYLES: TutorStyle[] = [
+  "課外活動・インターン・キャリア",
+  "サークル活動",
+  "大学文化・学園祭",
+  "学業・勉強",
+  "韓国生活・遊び",
+];
 
 function getRequiredString(formData: FormData, fieldName: string): string {
   const value = formData.get(fieldName);
@@ -29,9 +41,24 @@ function getTutorGender(formData: FormData): TutorGender {
 export default function TutorForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [selectedStyles, setSelectedStyles] = useState<TutorStyle[]>([]);
+
+  const handleStyleToggle = (styleOption: TutorStyle) => {
+    if (selectedStyles.includes(styleOption)) {
+      setSelectedStyles(selectedStyles.filter((s) => s !== styleOption));
+    } else {
+      setSelectedStyles([...selectedStyles, styleOption]);
+    }
+  };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (selectedStyles.length === 0) {
+      alert("수업 스타일을 최소 1개 이상 선택해 주세요.");
+      return;
+    }
+
     setLoading(true);
 
     const form = event.currentTarget;
@@ -44,9 +71,10 @@ export default function TutorForm() {
         last_name: getRequiredString(formData, "last_name"),
         furigana: getRequiredString(formData, "furigana"),
         gender: getTutorGender(formData),
+        birth_date: getRequiredString(formData, "birth_date"),
         school: getRequiredString(formData, "school"),
         major: getRequiredString(formData, "major"),
-        style: getRequiredString(formData, "style"),
+        style: selectedStyles, // 배열 타입으로 전달
         mbti: getRequiredString(formData, "mbti"),
         bio: getRequiredString(formData, "bio"),
       };
@@ -60,6 +88,7 @@ export default function TutorForm() {
 
       alert(result.message);
       form.reset();
+      setSelectedStyles([]);
       router.refresh();
     } catch (error: unknown) {
       alert(
@@ -80,6 +109,7 @@ export default function TutorForm() {
         <TutorFormField name="first_name" label="이름" />
       </div>
       <TutorFormField name="furigana" label="이름 후리가나" />
+      <TutorFormField name="birth_date" label="생년월일" type="date" />
       <fieldset>
         <legend className="block text-xs font-bold text-slate-600 mb-1">
           성별
@@ -109,7 +139,33 @@ export default function TutorForm() {
       </fieldset>
       <TutorFormField name="school" label="대학교 (school)" />
       <TutorFormField name="major" label="전공 (major)" />
-      <TutorFormField name="style" label="수업 스타일 (style)" />
+
+      {/* ✅ 수업 스타일 버튼 선택식 영역 추가 */}
+      <div className="flex flex-col gap-1.5">
+        <label className="block text-xs font-bold text-slate-600">
+          수업 스타일 (복수 선택 가능)
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {TUTOR_STYLES.map((styleOption) => {
+            const isSelected = selectedStyles.includes(styleOption);
+            return (
+              <button
+                key={styleOption}
+                type="button"
+                onClick={() => handleStyleToggle(styleOption)}
+                className={`rounded-xl border px-3 py-2 text-xs font-medium transition-colors ${
+                  isSelected
+                    ? "border-[#0E2640] bg-[#0E2640] text-white"
+                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                {styleOption} {isSelected && "✓"}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <TutorFormField name="mbti" label="MBTI" maxLength={4} />
       <div>
         <label className="block text-xs font-bold text-slate-600 mb-1">

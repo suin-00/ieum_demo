@@ -3,7 +3,11 @@ import {
   deleteTutorAccounts,
   updateTutorAccount,
 } from "@/actions/admin/adminTutor";
-import type { Tutor, TutorEditFormValues } from "@/types/tutor.types";
+import type {
+  Tutor,
+  TutorEditFormValues,
+  TutorStyle,
+} from "@/types/tutor.types";
 import { useRouter } from "next/navigation";
 
 interface UseTutorActionsOptions {
@@ -46,25 +50,48 @@ export function useTutorActions({
     router.refresh();
   }
 
+  // useTutorActions.ts 상단에 상수 정의 추가
+  const ALLOWED_TUTOR_STYLES: TutorStyle[] = [
+    "課外活動・インターン・キャリア",
+    "サークル活動",
+    "大学文化・学園祭",
+    "学業・勉強",
+    "韓国生活・遊び",
+  ];
+
+  // openEditForm 함수 내부 수정
   function openEditForm(tutor = selectedTutor) {
     if (!tutor) {
       return;
     }
+
+    // 기존 style 값들을 배열로 변환한 뒤, 허용된 5가지 스타일만 필터링
+    const rawStyles = Array.isArray(tutor.style)
+      ? tutor.style
+      : tutor.style
+        ? [tutor.style]
+        : [];
+
+    const validStyles = rawStyles.filter((s): s is TutorStyle =>
+      ALLOWED_TUTOR_STYLES.includes(s as TutorStyle),
+    );
 
     setEditForm({
       first_name: tutor.profiles?.first_name ?? "",
       last_name: tutor.profiles?.last_name ?? "",
       furigana: tutor.profiles?.furigana ?? "",
       gender: tutor.profiles?.gender ?? "male",
+      birth_date: tutor.profiles?.birth_date
+        ? tutor.profiles.birth_date.slice(0, 10)
+        : "",
       school: tutor.school ?? "",
       major: tutor.major ?? "",
-      style: tutor.style ?? "",
+      style: validStyles, // 👈 정제된 유효한 스타일만 세팅
       mbti: tutor.mbti ?? "",
       bio: tutor.bio ?? "",
     });
     setIsEditing(true);
   }
-
   function closeEditForm() {
     if (!isSaving) {
       setIsEditing(false);

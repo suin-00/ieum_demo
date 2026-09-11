@@ -1,4 +1,10 @@
 export type TutorGender = "male" | "female";
+export type TutorStyle =
+  | "課外活動・インターン・キャリア"
+  | "サークル活動"
+  | "大学文化・学園祭"
+  | "学業・勉強"
+  | "韓国生活・遊び";
 
 export interface TutorProfile {
   email: string | null;
@@ -7,6 +13,7 @@ export interface TutorProfile {
   last_name: string | null;
   furigana: string | null;
   gender: TutorGender | null;
+  birth_date: string | null;
   created_at: string | null;
 }
 
@@ -14,7 +21,7 @@ export interface Tutor {
   id: string;
   school: string | null;
   major: string | null;
-  style: string | null;
+  style: TutorStyle[] | null;
   mbti: string | null;
   bio: string | null;
   profiles: TutorProfile | null;
@@ -27,9 +34,10 @@ export interface CreateTutorInput {
   nickname?: string | null;
   furigana: string;
   gender: TutorGender;
+  birth_date: string;
   school: string;
   major: string;
-  style: string;
+  style: TutorStyle[];
   mbti: string;
   bio: string;
 }

@@ -3,6 +3,21 @@
 import type { FormEvent } from "react";
 import type { TutorEditFormValues } from "@/types/tutor.types";
 
+const TUTOR_STYLES: TutorStyle[] = [
+  "課外活動・インターン・キャリア",
+  "サークル活動",
+  "大学文化・学園祭",
+  "学業・勉強",
+  "韓国生活・遊び",
+];
+
+export type TutorStyle =
+  | "課外活動・インターン・キャリア"
+  | "サークル活動"
+  | "大学文化・学園祭"
+  | "学業・勉強"
+  | "韓国生活・遊び";
+
 interface TutorEditFormProps {
   value: TutorEditFormValues;
   isSaving: boolean;
@@ -18,10 +33,27 @@ export default function TutorEditForm({
   onSubmit,
   onCancel,
 }: TutorEditFormProps) {
+  // 1. 현재 선택된 스타일 배열 안전하게 가져오기 (문자열이거나 배열일 경우 모두 대응)
+  const currentStyles: TutorStyle[] = Array.isArray(value.style)
+    ? (value.style as TutorStyle[])
+    : typeof value.style === "string" && (value.style as string).trim() !== ""
+      ? [value.style as TutorStyle]
+      : [];
+
+  // 2. 스타일 토글 핸들러
+  const handleStyleToggle = (styleOption: TutorStyle) => {
+    let updatedStyles: TutorStyle[];
+    if (currentStyles.includes(styleOption)) {
+      updatedStyles = currentStyles.filter((s) => s !== styleOption);
+    } else {
+      updatedStyles = [...currentStyles, styleOption];
+    }
+    onChange({ ...value, style: updatedStyles });
+  };
+
   return (
     <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
       <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
-        {/* ✅ 성과 이름을 나란히 배치 */}
         <div className="grid grid-cols-2 gap-2 sm:col-span-2">
           <input
             value={value.last_name ?? ""}
@@ -55,6 +87,24 @@ export default function TutorEditForm({
           aria-label="후리가나"
           className="rounded-lg border p-2 text-sm text-slate-900"
         />
+
+        <div className="flex flex-col gap-1">
+          <label htmlFor="edit-birth_date" className="text-xs text-slate-600">
+            생년월일
+          </label>
+          <input
+            type="date"
+            id="edit-birth_date"
+            value={value.birth_date ? value.birth_date.slice(0, 10) : ""}
+            onChange={(event) =>
+              onChange({ ...value, birth_date: event.target.value })
+            }
+            required
+            aria-label="생년월일"
+            className="rounded-lg border p-2 text-sm text-slate-900"
+          />
+        </div>
+
         <div className="flex items-center gap-4 text-sm text-slate-900">
           <label className="flex items-center gap-1">
             <input
@@ -75,6 +125,7 @@ export default function TutorEditForm({
             여성
           </label>
         </div>
+
         <input
           value={value.school}
           onChange={(event) =>
@@ -95,16 +146,32 @@ export default function TutorEditForm({
           aria-label="전공"
           className="rounded-lg border p-2 text-sm text-slate-900"
         />
-        <input
-          value={value.style}
-          onChange={(event) =>
-            onChange({ ...value, style: event.target.value })
-          }
-          required
-          placeholder="수업 스타일"
-          aria-label="수업 스타일"
-          className="rounded-lg border p-2 text-sm text-slate-900"
-        />
+
+        <div className="flex flex-col gap-1.5 sm:col-span-2">
+          <label className="text-xs font-bold text-slate-600">
+            수업 스타일 (복수 선택 가능)
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {TUTOR_STYLES.map((styleOption) => {
+              const isSelected = currentStyles.includes(styleOption);
+              return (
+                <button
+                  key={styleOption}
+                  type="button"
+                  onClick={() => handleStyleToggle(styleOption)}
+                  className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+                    isSelected
+                      ? "border-[#0E2640] bg-[#0E2640] text-white"
+                      : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  {styleOption} {isSelected && "✓"}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <input
           value={value.mbti}
           onChange={(event) => onChange({ ...value, mbti: event.target.value })}
@@ -112,7 +179,7 @@ export default function TutorEditForm({
           maxLength={4}
           placeholder="MBTI"
           aria-label="MBTI"
-          className="rounded-lg border p-2 text-sm text-slate-900"
+          className="rounded-lg border p-2 text-sm text-slate-900 sm:col-span-2"
         />
         <textarea
           value={value.bio}

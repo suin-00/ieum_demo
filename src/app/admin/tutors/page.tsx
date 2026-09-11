@@ -1,19 +1,17 @@
-import { supabaseAdmin } from "@/lib/supabase/admin";
 import TutorForm from "@/app/admin/_components/TutorForm";
 import TutorTable from "@/app/admin/_components/TutorTable";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Home } from "lucide-react";
 import Link from "next/link";
 
 export default async function AdminTutorsPage() {
   const { data: tutors, error } = await supabaseAdmin
     .from("tutors")
-    // ✅ 1. name 대신 nickname을 포함한 바뀐 컬럼명들(또는 profiles(*))로 수정
     .select(
-      "*, profiles(email, nickname, first_name, last_name, furigana, gender)",
+      "*, profiles(email, nickname, first_name, last_name, furigana, gender, birth_date)",
     );
 
   const sortedTutors = [...(tutors ?? [])].sort((leftTutor, rightTutor) =>
-    // ✅ 2. 정렬 기준도 name 대신 nickname으로 변경
     (leftTutor.profiles?.nickname ?? "").localeCompare(
       rightTutor.profiles?.nickname ?? "",
       "ko",

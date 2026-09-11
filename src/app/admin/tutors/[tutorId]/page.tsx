@@ -13,7 +13,9 @@ export default async function TutorDetailPage({
   const { tutorId } = await params;
   const { data: tutor, error } = await supabaseAdmin
     .from("tutors")
-    .select("*, profiles(email, name, furigana, gender)")
+    .select(
+      "*, profiles(email, nickname, first_name, last_name, furigana, gender, birth_date)",
+    ) // 👈 birth_date 추가
     .eq("id", tutorId)
     .single();
 
@@ -29,6 +31,19 @@ export default async function TutorDetailPage({
         ? "여성"
         : "-";
 
+  // 생년월일로 만 나이 계산하는 로직
+  const calculateAge = (birthDateString: string | null) => {
+    if (!birthDateString) return "-";
+    const birthDate = new Date(birthDateString);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return `만 ${age}세 (${birthDateString})`;
+  };
+
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
       <div className="mb-6 flex items-center justify-between gap-4">
@@ -40,7 +55,7 @@ export default async function TutorDetailPage({
             튜터 목록으로 돌아가기
           </Link>
           <h1 className="mt-2 text-3xl font-bold text-[#0E2640]">
-            {profile?.name ?? "이름 없음"} 상세 정보
+            {profile?.nickname ?? "이름 없음"} 상세 정보
           </h1>
         </div>
         <TutorPasswordResetButton tutorId={tutorId} />
@@ -59,6 +74,14 @@ export default async function TutorDetailPage({
           <div>
             <dt className="text-xs font-bold text-slate-500">성별</dt>
             <dd className="mt-1 text-slate-900">{gender}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-bold text-slate-500">
+              생년월일 / 나이
+            </dt>
+            <dd className="mt-1 text-slate-900">
+              {calculateAge(profile?.birth_date ?? null)}
+            </dd>
           </div>
           <div>
             <dt className="text-xs font-bold text-slate-500">대학교</dt>
