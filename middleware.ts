@@ -54,6 +54,10 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
+  if (pathname === "/login") {
+    await supabase.auth.signOut();
+  }
+
   // 2. 로그인하지 않은 유저가 보호된 라우트에 접근할 때
   if (
     !user &&

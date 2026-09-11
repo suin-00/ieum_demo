@@ -1,11 +1,7 @@
 import LoginForm from "@/components/auth/LogInForm";
-import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 
 export default async function LoginPage() {
-  const supabase = await createClient();
-  await supabase.auth.signOut(); // 로그인 페이지에 들어오면 기존 세션 로그아웃 처리
-
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-8 shadow-sm border border-gray-100">
