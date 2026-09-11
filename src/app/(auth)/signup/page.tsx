@@ -1,28 +1,21 @@
-import SignupForm from "@/components/auth/SignUpForm";
-import Link from "next/link";
+import { SignUpForm } from "@/components/auth/SignUpForm";
+import Image from "next/image";
 
-export default function SignupPage() {
+export default function SignUpPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md space-y-6 rounded-2xl bg-white p-8 shadow-sm border border-gray-100">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">회원가입</h1>
-          <p className="mt-2 text-sm text-gray-500">
-            한국어 튜터링 플랫폼에 오신 것을 환영합니다.
-          </p>
-        </div>
+    <main className="relative flex min-h-screen w-full items-center justify-end pr-12 lg:pr-20 py-10">
+      {/* 배경 일러스트 이미지 */}
+      <Image
+        src="/images/background.png"
+        alt="IEUM Background"
+        fill
+        className="object-cover -z-10"
+        priority
+      />
 
-        <SignupForm />
-
-        <div className="mt-4 text-center text-sm text-gray-600">
-          <span>이미 계정이 있으신가요? </span>
-          <Link
-            href="/login"
-            className="font-semibold text-blue-600 hover:underline hover:underline-offset-4 transition-colors"
-          >
-            로그인
-          </Link>
-        </div>
+      {/* 32인치와 노트북 모두에서 비율이 깨지지 않는 동적 반응형 유리 카드 */}
+      <div className="w-[90%] sm:w-[480px] lg:w-[32vw] max-w-xl min-w-[380px] rounded-3xl bg-white/50 backdrop-blur-md px-10 py-10 lg:py-14 shadow-2xl border border-white/40 flex flex-col justify-center">
+        <SignUpForm />
       </div>
     </main>
   );
