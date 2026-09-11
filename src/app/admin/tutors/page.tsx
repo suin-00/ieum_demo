@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import TutorForm from "@/components/tutors/TutorForm";
-import TutorTable from "@/components/tutors/TutorTable";
+import TutorForm from "@/app/admin/_components/TutorForm";
+import TutorTable from "@/app/admin/_components/TutorTable";
 import { Home } from "lucide-react";
 import Link from "next/link";
 

@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from "react";
-import { deleteTutorAccounts, updateTutorAccount } from "@/actions/adminTutor";
+import {
+  deleteTutorAccounts,
+  updateTutorAccount,
+} from "@/actions/admin/adminTutor";
 import type { Tutor, TutorEditFormValues } from "@/types/tutor.types";
 import { useRouter } from "next/navigation";
 

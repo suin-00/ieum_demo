@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { createStudentAccount } from "@/actions/adminStudent";
+import { createStudentAccount } from "@/actions/admin/adminStudent";
 import { useRouter } from "next/navigation";
 
 export default function StudentForm() {

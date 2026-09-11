@@ -1,6 +1,6 @@
 "use client";
 
-import { sendTutorPasswordResetEmail } from "@/actions/adminTutor";
+import { sendTutorPasswordResetEmail } from "@/actions/admin/adminTutor";
 import { useState } from "react";
 
 interface TutorPasswordResetButtonProps {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import TutorPasswordResetButton from "@/components/tutors/TutorPasswordResetButton";
+import TutorPasswordResetButton from "@/app/admin/_components/TutorPasswordResetButton";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 interface TutorDetailPageProps {

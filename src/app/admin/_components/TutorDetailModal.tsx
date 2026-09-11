@@ -1,6 +1,6 @@
 "use client";
 
-import TutorPasswordResetButton from "@/components/tutors/TutorPasswordResetButton";
+import TutorPasswordResetButton from "@/app/admin/_components/TutorPasswordResetButton";
 import type { Tutor } from "@/types/tutor.types";
 
 interface TutorDetailModalProps {

@@ -21,7 +21,7 @@ export default function TutorEditForm({
   return (
     <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
       <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
-        {/* 성과 이름을 나란히 배치 */}
+        {/* ✅ 성과 이름을 나란히 배치 */}
         <div className="grid grid-cols-2 gap-2 sm:col-span-2">
           <input
             value={value.last_name ?? ""}

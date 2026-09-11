@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { createTutorAccount } from "@/actions/adminTutor";
-import TutorFormField from "@/components/tutors/TutorFormField";
+import { createTutorAccount } from "@/actions/admin/adminTutor";
+import TutorFormField from "@/app/admin/_components/TutorFormField";
 import type { CreateTutorInput, TutorGender } from "@/types/tutor.types";
 import { useRouter } from "next/navigation";
 
