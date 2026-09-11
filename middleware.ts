@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { ADMIN_EMAILS } from "@/constants/admin";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -15,7 +16,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           );
           supabaseResponse = NextResponse.next({
@@ -34,9 +35,22 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
+  const userEmail = user?.email ?? "";
+  const isAdmin = ADMIN_EMAILS.includes(userEmail);
 
   // 1. 관리자 로그인 페이지는 미들웨어 검사 제외
   if (pathname === "/admin-login") {
+    if (user && !isAdmin) {
+      const url = request.nextUrl.clone();
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      url.pathname = profile?.role === "tutor" ? "/tutors" : "/students";
+      return NextResponse.redirect(url);
+    }
     return supabaseResponse;
   }
 
@@ -52,11 +66,7 @@ export async function middleware(request: NextRequest) {
   ) {
     const url = request.nextUrl.clone();
 
-    if (pathname.startsWith("/admin") || pathname.startsWith("/tutor")) {
-      url.pathname = "/admin-login";
-    } else {
-      url.pathname = "/login";
-    }
+    url.pathname = "/login";
 
     return NextResponse.redirect(url);
   }
@@ -64,7 +74,13 @@ export async function middleware(request: NextRequest) {
   // 3. 로그인한 유저가 일반 로그인 / 관리자 로그인 페이지에 접근할 때만 튕겨내기 (/signup은 허용)
   if (user && (pathname === "/login" || pathname === "/admin-login")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/students";
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    url.pathname = profile?.role === "tutor" ? "/tutors" : "/students";
     return NextResponse.redirect(url);
   }
 
