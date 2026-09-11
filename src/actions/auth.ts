@@ -141,15 +141,14 @@ export async function signupWithEmail(
 
 export async function checkEmailDuplicate(email: string): Promise<boolean> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("email", email)
-    .single();
+  const { data, error } = await supabase.rpc("check_email_exists", {
+    target_email: email,
+  });
 
   if (error) {
+    console.error("Email check error:", error);
     return false;
   }
 
-  return !!data;
+  return !!data; // true면 이미 존재하는 이메일(중복)
 }

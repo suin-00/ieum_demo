@@ -1,14 +1,62 @@
 "use client";
 
-import React, { useActionState } from "react";
+import React, { useActionState, useState } from "react";
 import Link from "next/link";
-import { signupWithEmail, SignupState } from "@/actions/auth";
+import {
+  signupWithEmail,
+  checkEmailDuplicate,
+  SignupState,
+} from "@/actions/auth";
 
 export function SignUpForm() {
   const [state, formAction, isPending] = useActionState<SignupState, FormData>(
     signupWithEmail,
     null,
   );
+
+  // 💡 이메일 중복 확인 상태 관리 추가
+  const [email, setEmail] = useState("");
+  const [emailCheckMessage, setEmailCheckMessage] = useState<{
+    text: string;
+    isError: boolean;
+  } | null>(null);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+
+  // 💡 중복 확인 버튼 클릭 핸들러
+  const handleCheckDuplicate = async () => {
+    if (!email || !email.includes("@")) {
+      setEmailCheckMessage({
+        text: "有効なメールアドレスを入力してください。",
+        isError: true,
+      });
+      return;
+    }
+
+    try {
+      setIsCheckingEmail(true);
+      setEmailCheckMessage(null);
+      const isDuplicate = await checkEmailDuplicate(email);
+
+      if (isDuplicate) {
+        setEmailCheckMessage({
+          text: "すでに使用中のメールアドレスです。",
+          isError: true,
+        });
+      } else {
+        setEmailCheckMessage({
+          text: "使用可能なメールアドレスです。",
+          isError: false,
+        });
+      }
+    } catch {
+      setEmailCheckMessage({
+        text: "確認中にエラーが発生しました。",
+        isError: true,
+      });
+    } finally {
+      setIsCheckingEmail(false);
+    }
+  };
 
   return (
     <div className="w-full">
@@ -163,16 +211,28 @@ export function SignUpForm() {
               type="email"
               name="email"
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="example@ieum.com"
               className="flex-1 px-4 py-2.5 rounded-lg bg-[#FCFAFA] border border-slate-200 text-[#1E293B] text-sm focus:bg-white focus:border-[#235499] focus:ring-2 focus:ring-[#235499]/20 outline-none transition-all placeholder-slate-400 font-medium"
             />
             <button
               type="button"
-              className="shrink-0 px-4 py-2.5 bg-slate-100 text-[#405B78] hover:bg-slate-200 text-xs font-bold rounded-lg transition-colors border border-slate-200 whitespace-nowrap"
+              onClick={handleCheckDuplicate}
+              disabled={isCheckingEmail}
+              className="shrink-0 px-4 py-2.5 bg-slate-100 text-[#405B78] hover:bg-slate-200 text-xs font-bold rounded-lg transition-colors border border-slate-200 whitespace-nowrap disabled:bg-slate-200"
             >
-              重複確認
+              {isCheckingEmail ? "확인중..." : "重複確認"}
             </button>
           </div>
+          {/* 중복 확인 결과 메시지 */}
+          {emailCheckMessage && (
+            <p
+              className={`mt-1 text-xs font-medium ${emailCheckMessage.isError ? "text-red-500" : "text-green-600"}`}
+            >
+              {emailCheckMessage.text}
+            </p>
+          )}
         </div>
 
         {/* Password */}
