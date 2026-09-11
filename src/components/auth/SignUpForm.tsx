@@ -1,35 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useActionState } from "react";
 import Link from "next/link";
+import { signupWithEmail, SignupState } from "@/actions/auth";
 
 export function SignUpForm() {
-  const [formData, setFormData] = useState({
-    lastName: "",
-    firstName: "",
-    furigana: "",
-    school: "",
-    gender: "female",
-    proficiency: "beginner",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleGenderSelect = (gender: string) => {
-    setFormData((prev) => ({ ...prev, gender }));
-  };
-
-  const handleProficiencySelect = (level: string) => {
-    setFormData((prev) => ({ ...prev, proficiency: level }));
-  };
+  const [state, formAction, isPending] = useActionState<SignupState, FormData>(
+    signupWithEmail,
+    null,
+  );
 
   return (
     <div className="w-full">
@@ -42,7 +21,7 @@ export function SignUpForm() {
         </p>
       </div>
 
-      <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+      <form action={formAction} className="space-y-4">
         {/* Name Fields (Horizontal Layout) */}
         <div className="flex gap-3">
           <div className="flex-1">
@@ -51,9 +30,8 @@ export function SignUpForm() {
             </label>
             <input
               type="text"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
+              name="last_name"
+              required
               placeholder="山田"
               className="w-full px-4 py-2.5 rounded-lg bg-[#FCFAFA] border border-slate-200 text-[#1E293B] text-sm focus:bg-white focus:border-[#235499] focus:ring-2 focus:ring-[#235499]/20 outline-none transition-all placeholder-slate-400 font-medium"
             />
@@ -64,9 +42,8 @@ export function SignUpForm() {
             </label>
             <input
               type="text"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
+              name="first_name"
+              required
               placeholder="太郎"
               className="w-full px-4 py-2.5 rounded-lg bg-[#FCFAFA] border border-slate-200 text-[#1E293B] text-sm focus:bg-white focus:border-[#235499] focus:ring-2 focus:ring-[#235499]/20 outline-none transition-all placeholder-slate-400 font-medium"
             />
@@ -74,18 +51,29 @@ export function SignUpForm() {
         </div>
 
         {/* Furigana */}
-        <div>
-          <label className="block text-xs font-bold text-[#1E293B] mb-1.5">
-            フリガナ
-          </label>
-          <input
-            type="text"
-            name="furigana"
-            value={formData.furigana}
-            onChange={handleChange}
-            placeholder="ヤマダ タロウ"
-            className="w-full px-4 py-2.5 rounded-lg bg-[#FCFAFA] border border-slate-200 text-[#1E293B] text-sm focus:bg-white focus:border-[#235499] focus:ring-2 focus:ring-[#235499]/20 outline-none transition-all placeholder-slate-400 font-medium"
-          />
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <label className="block text-xs font-bold text-[#1E293B] mb-1.5">
+              姓 (フリガナ)
+            </label>
+            <input
+              type="text"
+              name="last_name_kana"
+              placeholder="ヤマダ"
+              className="w-full px-4 py-2.5 rounded-lg bg-[#FCFAFA] border border-slate-200 text-[#1E293B] text-sm focus:bg-white focus:border-[#235499] focus:ring-2 focus:ring-[#235499]/20 outline-none transition-all placeholder-slate-400 font-medium"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block text-xs font-bold text-[#1E293B] mb-1.5">
+              名 (フリガナ)
+            </label>
+            <input
+              type="text"
+              name="first_name_kana"
+              placeholder="タロウ"
+              className="w-full px-4 py-2.5 rounded-lg bg-[#FCFAFA] border border-slate-200 text-[#1E293B] text-sm focus:bg-white focus:border-[#235499] focus:ring-2 focus:ring-[#235499]/20 outline-none transition-all placeholder-slate-400 font-medium"
+            />
+          </div>
         </div>
 
         {/* Desired School */}
@@ -96,8 +84,7 @@ export function SignUpForm() {
           <input
             type="text"
             name="school"
-            value={formData.school}
-            onChange={handleChange}
+            required
             placeholder="例：ソウル大学"
             className="w-full px-4 py-2.5 rounded-lg bg-[#FCFAFA] border border-slate-200 text-[#1E293B] text-sm focus:bg-white focus:border-[#235499] focus:ring-2 focus:ring-[#235499]/20 outline-none transition-all placeholder-slate-400 font-medium"
           />
@@ -108,6 +95,7 @@ export function SignUpForm() {
           <label className="block text-xs font-bold text-[#1E293B] mb-1.5">
             性別
           </label>
+          <input type="hidden" name="gender" defaultValue="female" />
           <div className="flex gap-2">
             {[
               { id: "male", label: "男性" },
@@ -116,12 +104,16 @@ export function SignUpForm() {
               <button
                 key={option.id}
                 type="button"
-                onClick={() => handleGenderSelect(option.id)}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${
-                  formData.gender === option.id
-                    ? "bg-[#eef3fa] border-[#235499] text-[#235499] shadow-sm"
-                    : "bg-[#FCFAFA] border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300"
-                }`}
+                onClick={(e) => {
+                  const form = e.currentTarget.form;
+                  if (form) {
+                    const input = form.elements.namedItem(
+                      "gender",
+                    ) as HTMLInputElement;
+                    if (input) input.value = option.id;
+                  }
+                }}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all bg-[#FCFAFA] border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 focus:bg-[#eef3fa] focus:border-[#235499] focus:text-[#235499]`}
               >
                 {option.label}
               </button>
@@ -134,6 +126,7 @@ export function SignUpForm() {
           <label className="block text-xs font-bold text-[#1E293B] mb-1.5">
             韓国語レベル
           </label>
+          <input type="hidden" name="korean_level" defaultValue="beginner" />
           <div className="flex gap-2">
             {[
               { id: "beginner", label: "初級" },
@@ -143,12 +136,16 @@ export function SignUpForm() {
               <button
                 key={option.id}
                 type="button"
-                onClick={() => handleProficiencySelect(option.id)}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${
-                  formData.proficiency === option.id
-                    ? "bg-[#eef3fa] border-[#235499] text-[#235499] shadow-sm"
-                    : "bg-[#FCFAFA] border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300"
-                }`}
+                onClick={(e) => {
+                  const form = e.currentTarget.form;
+                  if (form) {
+                    const input = form.elements.namedItem(
+                      "korean_level",
+                    ) as HTMLInputElement;
+                    if (input) input.value = option.id;
+                  }
+                }}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all bg-[#FCFAFA] border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 focus:bg-[#eef3fa] focus:border-[#235499] focus:text-[#235499]`}
               >
                 {option.label}
               </button>
@@ -165,8 +162,7 @@ export function SignUpForm() {
             <input
               type="email"
               name="email"
-              value={formData.email}
-              onChange={handleChange}
+              required
               placeholder="example@ieum.com"
               className="flex-1 px-4 py-2.5 rounded-lg bg-[#FCFAFA] border border-slate-200 text-[#1E293B] text-sm focus:bg-white focus:border-[#235499] focus:ring-2 focus:ring-[#235499]/20 outline-none transition-all placeholder-slate-400 font-medium"
             />
@@ -187,8 +183,7 @@ export function SignUpForm() {
           <input
             type="password"
             name="password"
-            value={formData.password}
-            onChange={handleChange}
+            required
             placeholder="••••••••"
             className="w-full px-4 py-2.5 rounded-lg bg-[#FCFAFA] border border-slate-200 text-[#1E293B] text-sm focus:bg-white focus:border-[#235499] focus:ring-2 focus:ring-[#235499]/20 outline-none transition-all placeholder-slate-400 font-medium"
           />
@@ -202,24 +197,35 @@ export function SignUpForm() {
           <input
             type="password"
             name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
+            required
             placeholder="••••••••"
             className="w-full px-4 py-2.5 rounded-lg bg-[#FCFAFA] border border-slate-200 text-[#1E293B] text-sm focus:bg-white focus:border-[#235499] focus:ring-2 focus:ring-[#235499]/20 outline-none transition-all placeholder-slate-400 font-medium"
           />
         </div>
 
+        {state?.error && (
+          <p className="text-red-500 text-xs font-medium text-center">
+            {state.error}
+          </p>
+        )}
+
+        {state?.success && (
+          <p className="text-green-600 text-xs font-medium text-center">
+            会員登録が完了しました！ログインしてください。
+          </p>
+        )}
+
         <div className="pt-2">
           <button
             type="submit"
-            className="w-full bg-[#235499] hover:bg-[#1e4a87] text-white py-3 rounded-lg text-sm font-bold shadow-sm transition-all hover:shadow hover:-translate-y-0.5"
+            disabled={isPending}
+            className="w-full bg-[#235499] hover:bg-[#1e4a87] text-white py-3 rounded-lg text-sm font-bold shadow-sm transition-all hover:shadow hover:-translate-y-0.5 disabled:bg-slate-300"
           >
-            新規登録
+            {isPending ? "登録中..." : "新規登録"}
           </button>
         </div>
       </form>
 
-      {/* button + onToggle 대신 Link로 /login 이동 */}
       <div className="mt-6 text-center text-xs font-medium text-slate-500">
         すでにアカウントをお持ちですか？{" "}
         <Link
