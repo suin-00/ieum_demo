@@ -1,7 +1,7 @@
 "use client";
 
-import TutorEditForm from "@/components/tutors/TutorEditForm";
-import TutorDetailModal from "@/components/tutors/TutorDetailModal";
+import TutorEditForm from "@/app/admin/_components/TutorEditForm";
+import TutorDetailModal from "@/app/admin/_components/TutorDetailModal";
 import type { Tutor, TutorTableProps } from "@/types/tutor.types";
 import { useTutorActions } from "@/hooks/useTutorActions";
 import { useTutorSelection } from "@/hooks/useTutorSelection";
