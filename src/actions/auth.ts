@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server";
 import { ADMIN_EMAILS } from "@/constants/admin";
 
 // 1. 폼 상태(State)에 대한 명확한 타입 정의
