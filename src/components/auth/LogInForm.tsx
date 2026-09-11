@@ -4,7 +4,6 @@ import { useActionState } from "react";
 import { loginWithEmail } from "@/actions/auth";
 import Link from "next/link";
 
-// ❌ onToggle prop 인터페이스 통째로 제거
 export function LogIn() {
   const [state, formAction, isPending] = useActionState(loginWithEmail, null);
 
@@ -71,7 +70,6 @@ export function LogIn() {
 
       <div className="mt-6 text-center text-xs font-medium text-slate-500">
         アカウントをお持ちではないですか？{" "}
-        {/* ❌ onToggle 함수 대신 Next.js Link로 페이지 이동 처리 */}
         <Link
           href="/signup"
           className="text-[#235499] font-bold hover:underline hover:text-[#1e4a87]"
