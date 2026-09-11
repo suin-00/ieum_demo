@@ -1,39 +1,20 @@
-import LoginForm from "@/components/auth/LogInForm";
-import Link from "next/link";
+import { LogIn } from "@/components/auth/LogInForm";
+import Image from "next/image";
 
-export default async function LoginPage() {
+export default function LoginPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-8 shadow-sm border border-gray-100">
-        {/* 헤더 (타이틀) 영역 */}
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">로그인</h1>
-          <p className="mt-2 text-sm text-gray-500">
-            계정에 로그인하여 서비스를 이용해 보세요.
-          </p>
-        </div>
-
-        {/* 클라이언트 컴포넌트 호출 (상태 관리는 이 안에서 알아서 됨) */}
-        <LoginForm />
-
-        {/* 부가 메뉴 (비밀번호 찾기, 회원가입 유도) */}
-        <div className="mt-6 flex flex-col items-center gap-3 text-sm text-gray-600">
-          <Link
-            href="/reset-password"
-            className="hover:text-blue-600 hover:underline hover:underline-offset-4 transition-colors"
-          >
-            비밀번호를 잊으셨나요?
-          </Link>
-          <div className="flex gap-1">
-            <span>아직 계정이 없으신가요?</span>
-            <Link
-              href="/signup"
-              className="font-semibold text-blue-600 hover:underline hover:underline-offset-4 transition-colors"
-            >
-              회원가입
-            </Link>
-          </div>
-        </div>
+    <main className="relative flex min-h-screen w-full items-center justify-center p-4">
+      {/* 배경 일러스트 이미지 */}
+      <Image
+        src="/images/background.png"
+        alt="IEUM Background"
+        fill
+        className="object-cover -z-10"
+        priority
+      />
+      {/* 💡 크기를 대폭 키운 유리 카드 폼 (max-w-xl, p-12) */}
+      <div className="w-full max-w-xl rounded-3xl bg-white/50 backdrop-blur-md p-12 shadow-2xl border border-white/40">
+        <LogIn />
       </div>
     </main>
   );
