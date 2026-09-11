@@ -1,9 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import IntroSection from "@/components/students/matching/IntroSection";
-import ProfileEditSection from "@/components/students/matching/ProfileEditSection";
-import TutorListSection from "@/components/students/matching/TutorListSection";
-import MatchSection from "@/components/students/matching/MatchSection";
+import IntroSection from "@/components/common/HeroSection";
+import ProfileEditSection from "@/app/(dashboard)/students/matching/_components/TutorFilter";
+import TutorListSection from "@/app/(dashboard)/students/matching/_components/TutorList";
+import MatchSection from "@/app/(dashboard)/students/matching/_components/MatchingForm";
 
 export default async function StudentMatchingPage() {
   const supabase = await createClient();
