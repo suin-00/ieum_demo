@@ -13,7 +13,7 @@ export default function LoginPage() {
         priority
       />
       {/* 💡 크기를 대폭 키운 유리 카드 폼 (max-w-xl, p-12) */}
-      <div className="w-full max-w-xl rounded-3xl bg-white/50 backdrop-blur-md p-12 shadow-2xl border border-white/40">
+      <div className="w-full max-w-xl rounded-3xl bg-white/70 backdrop-blur-md p-12 shadow-2xl border border-white/40">
         <LogIn />
       </div>
     </main>
