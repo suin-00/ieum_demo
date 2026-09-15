@@ -96,7 +96,7 @@ export default function TutorDashboardPage() {
             school,
             major,
             profiles (
-              name
+              nickname
             )
           )
         `,
@@ -248,18 +248,33 @@ export default function TutorDashboardPage() {
     }
   };
 
+  // 👇 모바일 비율(420x800)의 채팅 팝업 창을 띄우는 함수
+  const openMobileChatPopup = () => {
+    const width = 420;
+    const height = 800;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+
+    window.open(
+      "/chats/mobile-popup", // 👈 모바일 뷰 전용 채팅 페이지 경로
+      "IEUM_MobileChat",
+      `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`,
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">튜터 대시보드</h1>
           <div className="flex items-center space-x-4">
-            <Link
-              href="/tutors/chat"
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+            {/* 👇 기존 Link 대신 모바일 비율 팝업을 띄우는 버튼으로 교체 */}
+            <button
+              onClick={openMobileChatPopup}
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-500 cursor-pointer"
             >
               채팅함
-            </Link>
+            </button>
             <Link
               href="/tutors/settings"
               className="text-sm font-medium text-gray-700 hover:text-gray-900"
@@ -268,7 +283,7 @@ export default function TutorDashboardPage() {
             </Link>
             <button
               onClick={handleLogout}
-              className="text-sm font-medium text-gray-700 hover:text-gray-900"
+              className="text-sm font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
             >
               로그아웃
             </button>
@@ -393,7 +408,7 @@ export default function TutorDashboardPage() {
                           handleCompleteLesson(lesson.lessonId, lesson.lessonId)
                         }
                         disabled={loadingComplete === lesson.lessonId}
-                        className="w-full mt-2 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                        className="w-full mt-2 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 cursor-pointer"
                       >
                         {loadingComplete === lesson.lessonId
                           ? "처리 중..."

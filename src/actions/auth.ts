@@ -17,7 +17,7 @@ export async function loginWithEmail(
   const password = String(formData.get("password") ?? "");
 
   if (ADMIN_EMAILS.includes(email)) {
-    return { error: "이메일 또는 비밀번호가 올바르지 않습니다." };
+    return { error: "使用できないメールアドレスです。" };
   }
 
   const supabase = await createClient();
@@ -25,7 +25,7 @@ export async function loginWithEmail(
     await supabase.auth.signInWithPassword({ email, password });
 
   if (authError || !authData.user) {
-    return { error: "이메일 또는 비밀번호가 올바르지 않습니다." };
+    return { error: "メールアドレスまたはパスワードが正しくありません。" };
   }
 
   if (
@@ -33,7 +33,7 @@ export async function loginWithEmail(
     authData.user.user_metadata?.role === "admin"
   ) {
     await supabase.auth.signOut();
-    return { error: "이메일 또는 비밀번호가 올바르지 않습니다." };
+    return { error: "メールアドレスまたはパスワードが正しくありません。" };
   }
 
   const { data: profileData } = await supabase
@@ -43,7 +43,7 @@ export async function loginWithEmail(
     .single();
 
   if (!profileData) {
-    return { error: "사용자 프로필 정보를 찾을 수 없습니다." };
+    return { error: "ユーザープロフィール情報が見つかりません。" };
   }
 
   let redirectPath = "/";
@@ -86,11 +86,11 @@ export async function signupWithEmail(
   const koreanLevel = String(formData.get("korean_level") ?? "").trim();
 
   if (ADMIN_EMAILS.includes(email)) {
-    return { error: "사용할 수 없는 이메일입니다." };
+    return { error: "使用できないメールアドレスです。" };
   }
 
   if (await checkEmailDuplicate(email)) {
-    return { error: "이미 사용 중인 이메일입니다." };
+    return { error: "すでに使用中のメールアドレスです。" };
   }
   const supabase = await createClient();
 
@@ -103,7 +103,7 @@ export async function signupWithEmail(
   });
 
   if (authError || !authData.user) {
-    return { error: "회원가입 중 오류가 발생했습니다." };
+    return { error: "会員登録中にエラーが発生しました。" };
   }
 
   const userId = authData.user.id;
@@ -123,7 +123,7 @@ export async function signupWithEmail(
   });
 
   if (profileError) {
-    return { error: "프로필 생성 중 오류가 발생했습니다." };
+    return { error: "プロファイル生成中にエラーが発生しました。" };
   }
 
   const { error: studentError } = await supabase.from("students").insert({
@@ -133,7 +133,7 @@ export async function signupWithEmail(
   });
 
   if (studentError) {
-    return { error: "학생 정보 생성 중 오류가 발생했습니다." };
+    return { error: "学生情報の作成中にエラーが発生しました。" };
   }
 
   return { success: true };
