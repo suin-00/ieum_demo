@@ -14,8 +14,9 @@ export interface NavLink {
   label: string;
   href: string;
 }
+
 export interface NavbarProps {
-  userState?: UserNavState; // 부모한테 받을 수 있도록 추가
+  userState?: UserNavState;
 }
 
 const NAV_CONFIG: Record<UserNavState, NavLink[]> = {
@@ -45,14 +46,17 @@ export function Navbar({ userState = "GUEST" }: NavbarProps) {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const currentUserState: UserNavState = userState; // 부모로부터 받은 userState를 사용
+  const currentUserState: UserNavState = userState;
   const navLinks = NAV_CONFIG[currentUserState];
 
   const handleNavigate = (href: string) => {
     setIsMenuOpen(false);
 
-    if (href.startsWith("/#")) {
-      const targetId = href.substring(2);
+    // 1. 해시 링크 처리 (예: /#features)
+    if (href.includes("/#")) {
+      const targetId = href.split("/#")[1];
+
+      // 현재 메인 페이지("/")에 있는 경우 부드럽게 스크롤
       if (pathname === "/") {
         requestAnimationFrame(() => {
           const element = document.getElementById(targetId);
@@ -62,9 +66,22 @@ export function Navbar({ userState = "GUEST" }: NavbarProps) {
         });
         return;
       }
+
+      // 다른 페이지에 있다면 메인 페이지의 해당 해시로 이동
+      router.push(href);
+      return;
     }
 
     router.push(href);
+  };
+
+  const handleLogoClick = () => {
+    setIsMenuOpen(false);
+    if (pathname === "/") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      router.push("/");
+    }
   };
 
   return (
@@ -73,7 +90,7 @@ export function Navbar({ userState = "GUEST" }: NavbarProps) {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <button
-            onClick={() => router.push("/")}
+            onClick={handleLogoClick}
             className="shrink-0 flex items-center cursor-pointer gap-1 group"
             aria-label="IEUM ホーム"
           >
