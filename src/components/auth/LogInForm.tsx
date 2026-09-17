@@ -27,7 +27,7 @@ export default function LoginForm() {
   return (
     <div className="min-h-screen w-full grid lg:grid-cols-2 bg-white">
       {/* Left Image Column */}
-      <div className="hidden lg:block w-full h-screen relative top-0 overflow-hidden bg-[#0E2640]">
+      <div className="hidden lg:block w-full h-screen sticky top-0 overflow-hidden bg-[#0E2640]">
         <Image
           src="/images/background.png"
           alt="IEUM Authentication"
