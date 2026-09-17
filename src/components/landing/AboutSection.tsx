@@ -55,7 +55,7 @@ export function AboutSection() {
             width="1448"
             height="1086"
             alt="IEUM Background"
-            src="/images/bgk.png"
+            src="/images/bkg.png"
             className="w-full h-full object-cover"
             loading="eager"
             fetchPriority="high"
