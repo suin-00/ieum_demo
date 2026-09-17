@@ -343,7 +343,7 @@ export default function LessonFlowSection() {
   const Illust = ILLUSTRATIONS[activeIndex];
 
   return (
-    <section className="relative bg-white py-20 md:py-28">
+    <section id="flow" className="relative bg-white py-20 md:py-28">
       <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
         {/* heading */}
         <div className="mb-10 flex items-center gap-4">

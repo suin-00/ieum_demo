@@ -14,6 +14,9 @@ export interface NavLink {
   label: string;
   href: string;
 }
+export interface NavbarProps {
+  userState?: UserNavState; // 부모한테 받을 수 있도록 추가
+}
 
 const NAV_CONFIG: Record<UserNavState, NavLink[]> = {
   GUEST: [
@@ -37,12 +40,12 @@ const NAV_CONFIG: Record<UserNavState, NavLink[]> = {
   ],
 };
 
-export function Navbar() {
+export function Navbar({ userState = "GUEST" }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const currentUserState: UserNavState = "STUDENT_UNMATCHED";
+  const currentUserState: UserNavState = userState; // 부모로부터 받은 userState를 사용
   const navLinks = NAV_CONFIG[currentUserState];
 
   const handleNavigate = (href: string) => {
