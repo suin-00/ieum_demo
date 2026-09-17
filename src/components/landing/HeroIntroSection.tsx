@@ -18,11 +18,13 @@ export default function HeroIntroSection({ ctaButton }: HeroIntroSectionProps) {
         - lg(15인치 이상 모니터): scale-105로 시원하게 확대
         - xl(울트라와이드/대형 모니터): scale-110으로 꽉 찬 느낌 부여
       */}
-      <div className="w-full transform origin-top scale-95 lg:scale-105 xl:scale-110 transition-transform">
+      <div className="w-full transform origin-top scale-95 lg:scale-106 xl:scale-110 transition-transform">
         <HeroBannerSection ctaButton={ctaButton} />
         <AboutSection />
         <FeaturesSection />
-        <LessonFlowSection />
+        <div className="w-full transform origin-top scale-100 lg:scale-110 xl:scale-120 transition-transform my-8">
+          <LessonFlowSection />
+        </div>
         <TutorShowcaseSection />
         <FooterSection />
       </div>
