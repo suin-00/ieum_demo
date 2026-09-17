@@ -1,88 +1,77 @@
-// app/admin-login/page.tsx
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client"; // 클라이언트용 supabase 생성 함수
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [adminKey, setAdminKey] = useState('');
+  const [username, setUsername] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleAdminAuth = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setErrorMsg("");
-
-    const supabase = createClient();
-
-    // 진짜 Supabase 로그인 실행
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setErrorMsg("로그인 실패: " + error.message);
-      setLoading(false);
-      return;
-    }
-
-    // 로그인 성공 후 관리자 메인 대시보드로 이동
-    router.push("/admin");
-    router.refresh();
+    // Skeleton navigation to admin dashboard
+    router.push('/admin');
   };
 
   return (
-    <main
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        marginTop: "100px",
-      }}
-    >
-      <h1>관리자 / 튜터 전용 로그인</h1>
-      <form
-        onSubmit={handleLogin}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-          width: "300px",
-          marginTop: "20px",
-        }}
-      >
-        {errorMsg && (
-          <p style={{ color: "red", fontSize: "14px" }}>{errorMsg}</p>
-        )}
-        <input
-          type="email"
-          placeholder="관리자 이메일"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ padding: "10px", fontSize: "16px" }}
-        />
-        <input
-          type="password"
-          placeholder="비밀번호"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ padding: "10px", fontSize: "16px" }}
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          style={{ padding: "10px", fontSize: "16px", cursor: "pointer" }}
-        >
-          {loading ? "로그인 중..." : "관리자 로그인"}
-        </button>
-      </form>
-    </main>
+    <div className="flex min-h-screen items-center justify-center bg-slate-900 px-4 py-12">
+      <div id="admin-login-card" className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-8 shadow-2xl">
+        <div className="text-center">
+          <span className="inline-flex items-center rounded-full bg-indigo-500/10 px-2.5 py-1 text-xs font-semibold text-indigo-400">
+            Internal Operations
+          </span>
+          <h1 className="mt-4 text-2xl font-bold tracking-tight text-white">Administrator Access</h1>
+          <p className="mt-1 text-sm text-slate-400">Restricted portal for curriculum managers and staff</p>
+        </div>
+
+        <form onSubmit={handleAdminAuth} className="mt-6 space-y-4">
+          <div>
+            <label htmlFor="admin-username" className="block text-xs font-medium text-slate-300">
+              Admin Identifier
+            </label>
+            <input
+              id="admin-username"
+              type="text"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="admin@platform.internal"
+              className="mt-1 block w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="admin-key" className="block text-xs font-medium text-slate-300">
+              Security Token / Master Key
+            </label>
+            <input
+              id="admin-key"
+              type="password"
+              required
+              value={adminKey}
+              onChange={(e) => setAdminKey(e.target.value)}
+              placeholder="••••••••••••••••"
+              className="mt-1 block w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none"
+            />
+          </div>
+
+          <button
+            id="admin-auth-submit-btn"
+            type="submit"
+            className="w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 transition"
+          >
+            Authenticate & Open Console
+          </button>
+        </form>
+
+        <div className="mt-6 text-center text-xs text-slate-500">
+          <Link href="/" className="hover:text-slate-300">
+            &larr; Return to Public Site
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -1,31 +1,38 @@
-import { useState } from "react";
+'use client';
 
-export function useTutorSelection(tutorIds: string[]) {
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const allSelected =
-    tutorIds.length > 0 && selectedIds.length === tutorIds.length;
+import { useState, useCallback } from 'react';
+import type { TutorProfile } from '@/types/tutor';
 
-  function toggle(id: string) {
-    setSelectedIds((currentIds) =>
-      currentIds.includes(id)
-        ? currentIds.filter((currentId) => currentId !== id)
-        : [...currentIds, id],
-    );
-  }
+export function useTutorSelection(initialTutors: TutorProfile[] = []) {
+  const [selectedTutorId, setSelectedTutorId] = useState<string | null>(null);
+  const [filterSubject, setFilterSubject] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
-  function toggleAll() {
-    setSelectedIds(allSelected ? [] : tutorIds);
-  }
+  const selectTutor = useCallback((tutorId: string) => {
+    setSelectedTutorId((prev) => (prev === tutorId ? null : tutorId));
+  }, []);
 
-  function clear() {
-    setSelectedIds([]);
-  }
+  const clearSelection = useCallback(() => {
+    setSelectedTutorId(null);
+  }, []);
+
+  const filteredTutors = initialTutors.filter((tutor) => {
+    const matchesSubject = filterSubject === 'all' || tutor.subjects.includes(filterSubject);
+    const matchesSearch =
+      !searchTerm ||
+      tutor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tutor.subjects.some((s) => s.toLowerCase().includes(searchTerm.toLowerCase()));
+    return matchesSubject && matchesSearch;
+  });
 
   return {
-    selectedIds,
-    allSelected,
-    toggle,
-    toggleAll,
-    clear,
+    selectedTutorId,
+    selectTutor,
+    clearSelection,
+    filterSubject,
+    setFilterSubject,
+    searchTerm,
+    setSearchTerm,
+    filteredTutors,
   };
 }

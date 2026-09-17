@@ -1,30 +1,32 @@
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+'use client';
 
-export default async function StudentAfterMatchPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import { Dashboard } from '@/components/students/Dashboard';
+import { Navbar } from '@/components/common/Navbar';
 
-  if (!user) redirect("/login");
-
-  // matches 테이블 조회
-  const { data: match } = await supabase
-    .from("matches")
-    .select("id")
-    .eq("student_id", user.id)
-    .maybeSingle();
-
-  // 매칭이 안 되어 있다면 매칭 전 페이지로 리다이렉트
-  if (!match) {
-    redirect("/students/matching");
-  }
+export default function StudentDashboardPage() {
+  const router = useRouter();
 
   return (
-    <div>
-      <h1>매칭 완료 페이지</h1>
-      {/* 매칭 후 보여줄 내용 */}
+    <div className="pt-16 md:pt-20 pb-24 md:pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto min-h-screen flex flex-col bg-slate-50">
+      <Navbar />
+      <Dashboard 
+        userRole="student"
+        onOpenChat={() => {
+          // 채팅 페이지 또는 라우트로 전환
+          router.push('/chats/1');
+        }}
+        onLogout={() => {
+          router.push('/login');
+        }}
+        onGoHome={() => {
+          router.push('/');
+        }}
+        onNavigateSupport={() => {
+          router.push('/support'); // 필요시 고객센터 경로
+        }}
+      />
     </div>
   );
 }

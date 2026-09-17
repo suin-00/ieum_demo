@@ -1,0 +1,6 @@
+{
+  "name": "Tutor & Student Platform",
+  "description": "Next.js App Router platform for tutor and student matching, lesson management, and administration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

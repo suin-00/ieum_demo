@@ -1,164 +1,68 @@
-"use client";
+'use client';
 
-import { useState, type FormEvent } from "react";
-import { useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import React, { useState } from 'react';
+import Link from 'next/link';
 
 export default function ResetPasswordPage() {
-  const router = useRouter();
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-  const [isSessionReady, setIsSessionReady] = useState(false);
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
-  useEffect(() => {
-    const supabase = createClient();
-    let isMounted = true;
-
-    async function prepareRecoverySession() {
-      const searchParams = new URLSearchParams(window.location.search);
-      const code = searchParams.get("code");
-      const hashParams = new URLSearchParams(window.location.hash.slice(1));
-      const accessToken = hashParams.get("access_token");
-      const refreshToken = hashParams.get("refresh_token");
-      const isRecoveryHash =
-        hashParams.get("type") === "recovery" && accessToken && refreshToken;
-
-      if (!code && !isRecoveryHash) {
-        setMessage("비밀번호 변경 이메일의 링크로 접속해 주세요.");
-        return;
-      }
-
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-        if (error) {
-          if (isMounted) {
-            setMessage(
-              `비밀번호 변경 링크가 유효하지 않습니다: ${error.message}`,
-            );
-          }
-          return;
-        }
-      }
-
-      if (isRecoveryHash && accessToken && refreshToken) {
-        const { error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        });
-
-        if (error) {
-          if (isMounted) {
-            setMessage(
-              `비밀번호 변경 링크가 유효하지 않습니다: ${error.message}`,
-            );
-          }
-          return;
-        }
-      }
-
-      const { data, error } = await supabase.auth.getSession();
-
-      if (!isMounted) {
-        return;
-      }
-
-      if (error || !data.session) {
-        setMessage("비밀번호 변경 링크를 통해 다시 접속해 주세요.");
-        return;
-      }
-
-      setIsSessionReady(true);
-    }
-
-    void prepareRecoverySession();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setMessage("");
-
-    if (password.length < 8) {
-      setMessage("비밀번호는 8자 이상이어야 합니다.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setMessage("비밀번호가 일치하지 않습니다.");
-      return;
-    }
-
-    setIsSaving(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({ password });
-    setIsSaving(false);
-
-    setMessage(
-      error
-        ? `비밀번호 변경 실패: ${error.message}`
-        : "비밀번호가 변경되었습니다. 이제 새 비밀번호로 로그인해 주세요.",
-    );
-
-    if (!error) {
-      setPassword("");
-      setConfirmPassword("");
-      window.setTimeout(() => router.push("/"), 1500);
-    }
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitted(true);
+  };
 
   return (
-    <main className="mx-auto max-w-md px-4 py-16">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-bold text-[#0E2640]">비밀번호 변경</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          새로 사용할 비밀번호를 입력해 주세요.
-        </p>
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
+      <div id="reset-password-card" className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xs">
+        <div className="text-center">
+          <Link href="/login" className="inline-block text-xs font-semibold uppercase tracking-wider text-indigo-600">
+            &larr; Back to Login
+          </Link>
+          <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">Reset your password</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Enter your email address and we will send you a recovery link.
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
-          <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
-            새 비밀번호
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              minLength={8}
-              required
-              className="rounded-xl border p-2.5 text-slate-900"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
-            새 비밀번호 확인
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              minLength={8}
-              required
-              className="rounded-xl border p-2.5 text-slate-900"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={isSaving || !isSessionReady}
-            className="rounded-xl bg-[#0E2640] py-3 text-sm font-bold text-white disabled:opacity-50"
-          >
-            {isSaving
-              ? "변경 중..."
-              : isSessionReady
-                ? "비밀번호 변경"
-                : "링크 확인 중..."}
-          </button>
-        </form>
+        {submitted ? (
+          <div className="mt-6 rounded-lg bg-indigo-50 p-4 text-center">
+            <p className="text-sm font-medium text-indigo-900">Recovery link dispatched!</p>
+            <p className="mt-1 text-xs text-indigo-700">Check {email} for instructions to reset your password.</p>
+            <Link
+              href="/login"
+              className="mt-4 inline-block text-xs font-semibold text-indigo-600 hover:underline"
+            >
+              Return to login
+            </Link>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            <div>
+              <label htmlFor="reset-email" className="block text-xs font-medium text-slate-700">
+                Email address
+              </label>
+              <input
+                id="reset-email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none"
+              />
+            </div>
 
-        {message && <p className="mt-4 text-sm text-slate-700">{message}</p>}
+            <button
+              id="reset-submit-btn"
+              type="submit"
+              className="w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 transition"
+            >
+              Send Password Reset Link
+            </button>
+          </form>
+        )}
       </div>
-    </main>
+    </div>
   );
 }
