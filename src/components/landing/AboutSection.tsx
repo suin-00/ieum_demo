@@ -1,5 +1,48 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
+import { motion } from "motion/react";
+
+// 모든 줄이 동시에 시작하도록 딜레이를 통일한 타이핑 컴포넌트
+function TypewriterFadeParagraph({
+  text,
+  delay = 0.1,
+}: {
+  text: string;
+  delay?: number;
+}) {
+  const letters = Array.from(text);
+
+  return (
+    <motion.span
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      className="inline"
+    >
+      {letters.map((char, index) => (
+        <motion.span
+          key={index}
+          variants={{
+            hidden: { opacity: 0, y: 6 },
+            visible: { opacity: 1, y: 0 },
+          }}
+          transition={{
+            duration: 0.12,
+            // 모든 줄이 동일한 base delay를 공유하므로, 화면에 들어오는 순간 모든 줄이 동시다발적으로 타이핑됩니다.
+            delay: delay + index * 0.015,
+            ease: "easeOut",
+          }}
+          className="inline-block"
+          style={{ whiteSpace: char === " " ? "pre" : "normal" }}
+        >
+          {char}
+        </motion.span>
+      ))}
+    </motion.span>
+  );
+}
 
 export function AboutSection() {
   return (
@@ -17,21 +60,56 @@ export function AboutSection() {
                 減らしていく。
               </h2>
 
+              {/* 👇 모든 줄의 delay를 동일하게(0.15) 주어 동시에 타이핑 시작 */}
               <p className="text-[#61799C] text-base sm:text-lg font-normal leading-[29.25px] max-w-2xl">
-                韓国留学を準備していると、韓国語だけでなく、
-                <br className="hidden sm:inline" />
-                新しい環境への不安や大学生活について
-                <br className="hidden sm:inline" />
-                分からないことがたくさんあります。
-                <br className="hidden sm:inline" />
-                IEUMは、韓国の現地大学に通う大学生とつながりながら、
-                <br className="hidden sm:inline" />
-                そんな不安を一緒に少しずつ解消していくサービスです。
+                <span className="block">
+                  <TypewriterFadeParagraph
+                    text="韓国留学を準備していると、韓国語だけでなく、"
+                    delay={0.15}
+                  />
+                </span>
+                <span className="block sm:inline">
+                  <TypewriterFadeParagraph
+                    text="新しい環境への不安や大学生活について"
+                    delay={0.15}
+                  />
+                </span>
+                <span className="block sm:inline">
+                  <TypewriterFadeParagraph
+                    text="分からないことがたくさんあります。"
+                    delay={0.15}
+                  />
+                </span>
+                <span className="block sm:inline">
+                  <TypewriterFadeParagraph
+                    text="IEUMは、韓国の現地大学に通う大学生とつながりながら、"
+                    delay={0.15}
+                  />
+                </span>
+                <span className="block sm:inline">
+                  <TypewriterFadeParagraph
+                    text="そんな不安を一緒に少しずつ解消していくサービスです。"
+                    delay={0.15}
+                  />
+                </span>
               </p>
             </div>
 
             <div className="lg:col-span-3 relative w-full mt-8 lg:mt-0">
-              <div className="w-full relative overflow-hidden rounded-2xl shadow-xl">
+              {/* 👇 motion.div를 적용하여 아래에서 위로 뽀잉- 하고 튀어 오르게 설정 */}
+              <motion.div
+                initial={{ opacity: 0, y: 60 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300, // 숫자가 높을수록 탄성이 강해짐
+                  damping: 15, // 숫자가 낮을수록 더 많이 꿀렁거리며 튕김 (뽀잉 느낌 핵심!)
+                  mass: 0.8,
+                  delay: 0.2,
+                }}
+                className="w-full relative overflow-hidden rounded-2xl shadow-xl"
+              >
                 <Image
                   width="1478"
                   height="1064"
@@ -41,7 +119,7 @@ export function AboutSection() {
                   loading="eager"
                   fetchPriority="high"
                 />
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>

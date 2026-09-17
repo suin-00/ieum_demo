@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Users } from "lucide-react";
 import { FadeIn } from "./FadeIn";
@@ -40,13 +40,21 @@ export function HeroBannerSection({ ctaButton }: HeroBannerSectionProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full translate-y-2 sm:translate-y-3 lg:translate-y-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           <div className="lg:col-span-7 flex flex-col justify-center z-20">
+            {/* 타이틀 및 형광펜 애니메이션 영역 */}
             <FadeIn delay={0.05}>
               <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-extrabold text-[#1E293B] leading-[1.18] mb-6 tracking-tight">
                 はじめての
                 <br />
                 <span className="relative inline-block my-1">
                   <span className="relative z-10">韓国留学</span>
-                  <span className="absolute bottom-1.5 left-0 right-0 h-3.5 bg-[#FDE047] z-0 opacity-85 rounded-sm"></span>
+                  {/* 👇 animate 속성으로 강제 실행되도록 변경하고, originX를 명시 */}
+                  <motion.span
+                    initial={{ scaleX: 0, opacity: 0 }}
+                    animate={{ scaleX: 1, opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
+                    style={{ transformOrigin: "left" }}
+                    className="absolute bottom-1.5 left-0 right-0 h-3.5 bg-[#FDE047] z-0 opacity-85 rounded-sm inline-block"
+                  />
                 </span>
                 を、
                 <br />
@@ -54,16 +62,19 @@ export function HeroBannerSection({ ctaButton }: HeroBannerSectionProps) {
               </h1>
             </FadeIn>
 
-            <FadeIn delay={0.12}>
-              <p className="text-base sm:text-lg text-[#1E293B] font-bold mb-3 leading-snug">
-                韓国の現役大学生と一緒に準備する、韓国留学。
-              </p>
-              <p className="text-sm text-slate-500 font-medium leading-relaxed max-w-lg mb-8">
-                IEUMは、韓国留学を準備する学生と、韓国の現役大学生をつなぐサービスです。語学だけでなく、大学生活のすべてを一緒に準備できます。
-              </p>
+            {/* 👇 아래 작은 글자 페이드인 업 영역 */}
+            <FadeIn delay={0.2}>
+              <div className="space-y-3 mb-8">
+                <p className="text-base sm:text-lg text-[#1E293B] font-bold leading-snug">
+                  韓国の現役大学生と一緒に準備する、韓国留学。
+                </p>
+                <p className="text-sm text-slate-500 font-medium leading-relaxed max-w-lg">
+                  IEUMは、韓国留学を準備する学生と、韓国の現役大学生をつなぐサービスです。語学だけでなく、大学生活のすべてを一緒に準備できます。
+                </p>
+              </div>
             </FadeIn>
 
-            <FadeIn delay={0.18}>
+            <FadeIn delay={0.35}>
               <div>{ctaButton}</div>
             </FadeIn>
           </div>
@@ -300,7 +311,7 @@ export function HeroBannerSection({ ctaButton }: HeroBannerSectionProps) {
                 </div>
               </motion.div>
 
-              <div className="absolute -bottom-2 sm:-bottom-4 left-0 sm:-left-4 translate-x-4 sm:translate-x-5 animate-float-delayed z-30 select-none">
+              <div className="absolute bottom-2 sm:-bottom-4 left-0 sm:-left-4 translate-x-4 sm:translate-x-5 animate-float-delayed z-30 select-none">
                 <div className="flex flex-col items-center relative">
                   <div className="absolute -top-3.5 -right-2.5 z-20 rotate-12 flex items-end">
                     <div className="w-[1.5px] h-4 bg-slate-600 rounded-full" />
