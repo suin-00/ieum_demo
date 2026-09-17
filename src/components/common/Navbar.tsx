@@ -4,21 +4,64 @@ import React, { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
+export type UserNavState =
+  | "GUEST"
+  | "STUDENT_UNMATCHED"
+  | "STUDENT_MATCHED"
+  | "TUTOR";
+
+export interface NavLink {
+  label: string;
+  href: string;
+}
+
+const NAV_CONFIG: Record<UserNavState, NavLink[]> = {
+  GUEST: [
+    { label: "IEUMとは", href: "/#about" },
+    { label: "IEUMの特徴", href: "/#features" },
+    { label: "レッスンの流れ", href: "/#flow" },
+  ],
+  STUDENT_UNMATCHED: [
+    { label: "紹介", href: "/" },
+    { label: "プラン", href: "/plan" },
+    { label: "マッチング", href: "/students/matching" },
+  ],
+  STUDENT_MATCHED: [
+    { label: "紹介", href: "/" },
+    { label: "プラン", href: "/plan" },
+    { label: "チャット", href: "/chats" },
+  ],
+  TUTOR: [
+    { label: "紹介", href: "/" },
+    { label: "チャット", href: "/chats" },
+  ],
+};
+
 export function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const navLinks = [
-    { label: "スケジュール", href: "/students/timetable" },
-    { label: "授業", href: "/students/matching" },
-    { label: "チャット", href: "/chats" },
-    { label: "メニュー", href: "/students" },
-  ];
+  const currentUserState: UserNavState = "STUDENT_UNMATCHED";
+  const navLinks = NAV_CONFIG[currentUserState];
 
   const handleNavigate = (href: string) => {
-    router.push(href);
     setIsMenuOpen(false);
+
+    if (href.startsWith("/#")) {
+      const targetId = href.substring(2);
+      if (pathname === "/") {
+        requestAnimationFrame(() => {
+          const element = document.getElementById(targetId);
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth" });
+          }
+        });
+        return;
+      }
+    }
+
+    router.push(href);
   };
 
   return (
@@ -37,8 +80,8 @@ export function Navbar() {
             </span>
           </button>
 
-          {/* Center Navigation Links (Desktop) */}
-          <div className="hidden md:flex items-center space-x-8">
+          {/* Navigation Links (Desktop) */}
+          <div className="hidden md:flex items-center space-x-8 mr-6 md:mr-8 lg:mr-12">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
