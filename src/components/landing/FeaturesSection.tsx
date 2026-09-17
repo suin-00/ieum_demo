@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState, memo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, memo } from "react";
+import { motion, AnimatePresence } from "motion/react";
 
-const INK = '#16324F';
+const INK = "#16324F";
 
 type Palette = {
   bg: string;
@@ -14,10 +14,34 @@ type Palette = {
 };
 
 const PALETTES: Palette[] = [
-  { bg: '#DDEBF8', paper: '#FFFFFF', b: '#F2DDBE', point: '#2F6FD0', badge: '#C9DFF4' },
-  { bg: '#DCEFE3', paper: '#FFFFFF', b: '#E9D3AE', point: '#3C8F6A', badge: '#C4E4D3' },
-  { bg: '#FBEFCB', paper: '#FFFFFF', b: '#F2C9AF', point: '#D9663A', badge: '#F4E2AC' },
-  { bg: '#E7E3F5', paper: '#FFFFFF', b: '#F1DFB8', point: '#6152BE', badge: '#D6D0EC' },
+  {
+    bg: "#DDEBF8",
+    paper: "#FFFFFF",
+    b: "#F2DDBE",
+    point: "#2F6FD0",
+    badge: "#C9DFF4",
+  },
+  {
+    bg: "#DCEFE3",
+    paper: "#FFFFFF",
+    b: "#E9D3AE",
+    point: "#3C8F6A",
+    badge: "#C4E4D3",
+  },
+  {
+    bg: "#FBEFCB",
+    paper: "#FFFFFF",
+    b: "#F2C9AF",
+    point: "#D9663A",
+    badge: "#F4E2AC",
+  },
+  {
+    bg: "#E7E3F5",
+    paper: "#FFFFFF",
+    b: "#F1DFB8",
+    point: "#6152BE",
+    badge: "#D6D0EC",
+  },
 ];
 
 type Feature = {
@@ -28,8 +52,8 @@ type Feature = {
 
 const featuresData: Feature[] = [
   {
-    label: '志望大学の現役学生とマッチング',
-    title: '行きたい大学の\n「リアル」がわかる',
+    label: "志望大学の現役学生とマッチング",
+    title: "行きたい大学の\n「リアル」がわかる",
     description: (
       <>
         SKYをはじめとする韓国主要大学の現役学生とマッチング。
@@ -40,8 +64,8 @@ const featuresData: Feature[] = [
     ),
   },
   {
-    label: '語学だけじゃない、大学生活まで準備',
-    title: '韓国での「生活」に\n備える',
+    label: "語学だけじゃない、大学生活まで準備",
+    title: "韓国での「生活」に\n備える",
     description: (
       <>
         単なる韓国語レッスンではありません。
@@ -52,8 +76,8 @@ const featuresData: Feature[] = [
     ),
   },
   {
-    label: '会話中心の実践トレーニング',
-    title: '「覚える」から\n「使える」韓国語へ',
+    label: "会話中心の実践トレーニング",
+    title: "「覚える」から\n「使える」韓国語へ",
     description: (
       <>
         単語や文法を覚えるだけではなく、ロールプレイやミッション形式のアクティビティを通して、韓国で実際に遭遇する場面を練習します。
@@ -64,8 +88,8 @@ const featuresData: Feature[] = [
     ),
   },
   {
-    label: '渡韓前から、入学後まで',
-    title: '留学生活に寄り添う\n継続サポート',
+    label: "渡韓前から、入学後まで",
+    title: "留学生活に寄り添う\n継続サポート",
     description: (
       <>
         渡韓前は、韓国語への不安や現地生活に対する「わからない」を一つずつ解消。そして入学後も、現地の大学生とのつながりを通して、韓国人の友達をつくったり、大学のコミュニティに自然に溶け込んだりできるようサポートします。
@@ -81,11 +105,13 @@ const Obj = ({
   delay = 0,
   children,
   ...rest
-}: { delay?: number; children: React.ReactNode } & React.ComponentProps<typeof motion.g>) => (
+}: { delay?: number; children: React.ReactNode } & React.ComponentProps<
+  typeof motion.g
+>) => (
   <motion.g
     initial={{ opacity: 0, y: 8 }}
     animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.45, delay, ease: 'easeOut' }}
+    transition={{ duration: 0.45, delay, ease: "easeOut" }}
     {...rest}
   >
     {children}
@@ -100,7 +126,12 @@ const Canvas = ({ children }: { children: React.ReactNode }) => (
     aria-hidden="true"
     focusable="false"
   >
-    <g stroke={INK} strokeWidth={1.6} strokeLinejoin="round" strokeLinecap="round">
+    <g
+      stroke={INK}
+      strokeWidth={1.6}
+      strokeLinejoin="round"
+      strokeLinecap="round"
+    >
       {children}
     </g>
   </svg>
@@ -112,27 +143,101 @@ const VisualMatch = ({ p }: { p: Palette }) => (
     {/* 배경 프로필 카드 (매칭 상대) */}
     <Obj delay={0.05} transform="rotate(6 210 210)">
       <rect x="140" y="80" width="180" height="260" rx="24" fill={p.bg} />
-      <rect x="160" y="100" width="140" height="120" rx="16" fill={p.paper} fillOpacity={0.6} />
+      <rect
+        x="160"
+        y="100"
+        width="140"
+        height="120"
+        rx="16"
+        fill={p.paper}
+        fillOpacity={0.6}
+      />
       <circle cx="230" cy="160" r="30" fill={p.b} stroke="none" />
-      <rect x="160" y="240" width="80" height="12" rx="6" fill={p.point} fillOpacity={0.15} stroke="none" />
-      <rect x="160" y="260" width="100" height="8" rx="4" fill={p.point} fillOpacity={0.1} stroke="none" />
+      <rect
+        x="160"
+        y="240"
+        width="80"
+        height="12"
+        rx="6"
+        fill={p.point}
+        fillOpacity={0.15}
+        stroke="none"
+      />
+      <rect
+        x="160"
+        y="260"
+        width="100"
+        height="8"
+        rx="4"
+        fill={p.point}
+        fillOpacity={0.1}
+        stroke="none"
+      />
     </Obj>
 
     {/* 메인 프로필 카드 */}
     <Obj delay={0.15} transform="rotate(-3 180 230)">
       {/* 그림자 효과 */}
-      <rect x="74" y="114" width="200" height="280" rx="24" fill={INK} fillOpacity={0.05} stroke="none" />
-      
+      <rect
+        x="74"
+        y="114"
+        width="200"
+        height="280"
+        rx="24"
+        fill={INK}
+        fillOpacity={0.05}
+        stroke="none"
+      />
+
       <rect x="70" y="110" width="200" height="280" rx="24" fill={p.paper} />
       <rect x="90" y="130" width="160" height="130" rx="16" fill={p.b} />
-      <circle cx="170" cy="195" r="35" fill={p.point} fillOpacity={0.15} stroke="none" />
-      <path d="M150 210 Q170 180 190 210" stroke={p.point} strokeWidth={3} fill="none" />
-      
+      <circle
+        cx="170"
+        cy="195"
+        r="35"
+        fill={p.point}
+        fillOpacity={0.15}
+        stroke="none"
+      />
+      <path
+        d="M150 210 Q170 180 190 210"
+        stroke={p.point}
+        strokeWidth={3}
+        fill="none"
+      />
+
       {/* 정보 라인 */}
-      <rect x="90" y="285" width="100" height="12" rx="6" fill={INK} fillOpacity={0.15} stroke="none" />
-      <rect x="90" y="310" width="140" height="8" rx="4" fill={INK} fillOpacity={0.08} stroke="none" />
-      <rect x="90" y="330" width="80" height="8" rx="4" fill={INK} fillOpacity={0.08} stroke="none" />
-      
+      <rect
+        x="90"
+        y="285"
+        width="100"
+        height="12"
+        rx="6"
+        fill={INK}
+        fillOpacity={0.15}
+        stroke="none"
+      />
+      <rect
+        x="90"
+        y="310"
+        width="140"
+        height="8"
+        rx="4"
+        fill={INK}
+        fillOpacity={0.08}
+        stroke="none"
+      />
+      <rect
+        x="90"
+        y="330"
+        width="80"
+        height="8"
+        rx="4"
+        fill={INK}
+        fillOpacity={0.08}
+        stroke="none"
+      />
+
       {/* 요청하신 정체불명의 동그라미 및 체크 아이콘 삭제 완료 */}
     </Obj>
   </Canvas>
@@ -144,8 +249,17 @@ const VisualCampusLife = ({ p }: { p: Palette }) => (
     {/* 메인 캘린더 / 시간표 보드 */}
     <Obj>
       <rect x="60" y="70" width="220" height="260" rx="20" fill={p.paper} />
-      <rect x="85" y="95" width="70" height="12" rx="6" fill={INK} fillOpacity={0.15} stroke="none" />
-      
+      <rect
+        x="85"
+        y="95"
+        width="70"
+        height="12"
+        rx="6"
+        fill={INK}
+        fillOpacity={0.15}
+        stroke="none"
+      />
+
       {/* 스케줄 블록들 */}
       <g stroke="none">
         <rect x="85" y="135" width="40" height="60" rx="8" fill={p.bg} />
@@ -158,34 +272,152 @@ const VisualCampusLife = ({ p }: { p: Palette }) => (
 
     {/* 플로팅 카드 1 (동아리/할일 느낌 유지) */}
     <Obj delay={0.15}>
-      <rect x="180" y="244" width="160" height="70" rx="16" fill={INK} fillOpacity={0.05} stroke="none" />
+      <rect
+        x="180"
+        y="244"
+        width="160"
+        height="70"
+        rx="16"
+        fill={INK}
+        fillOpacity={0.05}
+        stroke="none"
+      />
       <rect x="180" y="240" width="160" height="70" rx="16" fill={p.paper} />
       <circle cx="215" cy="275" r="14" fill={p.bg} stroke="none" />
-      <rect x="245" y="265" width="70" height="8" rx="4" fill={INK} fillOpacity={0.15} stroke="none" />
-      <rect x="245" y="280" width="40" height="6" rx="3" fill={INK} fillOpacity={0.08} stroke="none" />
+      <rect
+        x="245"
+        y="265"
+        width="70"
+        height="8"
+        rx="4"
+        fill={INK}
+        fillOpacity={0.15}
+        stroke="none"
+      />
+      <rect
+        x="245"
+        y="280"
+        width="40"
+        height="6"
+        rx="3"
+        fill={INK}
+        fillOpacity={0.08}
+        stroke="none"
+      />
     </Obj>
 
     {/* 수강신청 창 느낌으로 변경된 플로팅 카드 2 (가로가 더 긴 UI) */}
     <Obj delay={0.25}>
-      <rect x="100" y="324" width="240" height="80" rx="12" fill={INK} fillOpacity={0.05} stroke="none" />
+      <rect
+        x="100"
+        y="324"
+        width="240"
+        height="80"
+        rx="12"
+        fill={INK}
+        fillOpacity={0.05}
+        stroke="none"
+      />
       <rect x="100" y="320" width="240" height="80" rx="12" fill={p.paper} />
-      
+
       {/* 헤더 바 영역 */}
-      <path d="M 100 332 Q 100 320 112 320 L 328 320 Q 340 320 340 332 L 340 340 L 100 340 Z" fill={p.bg} stroke="none" />
-      <circle cx="115" cy="330" r="3" fill={INK} fillOpacity={0.2} stroke="none" />
-      <circle cx="125" cy="330" r="3" fill={INK} fillOpacity={0.2} stroke="none" />
-      <circle cx="135" cy="330" r="3" fill={INK} fillOpacity={0.2} stroke="none" />
-      
+      <path
+        d="M 100 332 Q 100 320 112 320 L 328 320 Q 340 320 340 332 L 340 340 L 100 340 Z"
+        fill={p.bg}
+        stroke="none"
+      />
+      <circle
+        cx="115"
+        cy="330"
+        r="3"
+        fill={INK}
+        fillOpacity={0.2}
+        stroke="none"
+      />
+      <circle
+        cx="125"
+        cy="330"
+        r="3"
+        fill={INK}
+        fillOpacity={0.2}
+        stroke="none"
+      />
+      <circle
+        cx="135"
+        cy="330"
+        r="3"
+        fill={INK}
+        fillOpacity={0.2}
+        stroke="none"
+      />
+
       {/* 리스트 아이템 1 */}
-      <rect x="110" y="350" width="12" height="12" rx="3" fill="none" stroke={INK} strokeOpacity={0.3} strokeWidth={1.5} />
-      <rect x="135" y="352" width="120" height="8" rx="4" fill={INK} fillOpacity={0.15} stroke="none" />
-      <rect x="270" y="350" width="50" height="12" rx="6" fill={p.point} stroke="none" />
-      
+      <rect
+        x="110"
+        y="350"
+        width="12"
+        height="12"
+        rx="3"
+        fill="none"
+        stroke={INK}
+        strokeOpacity={0.3}
+        strokeWidth={1.5}
+      />
+      <rect
+        x="135"
+        y="352"
+        width="120"
+        height="8"
+        rx="4"
+        fill={INK}
+        fillOpacity={0.15}
+        stroke="none"
+      />
+      <rect
+        x="270"
+        y="350"
+        width="50"
+        height="12"
+        rx="6"
+        fill={p.point}
+        stroke="none"
+      />
+
       {/* 리스트 아이템 2 */}
-      <rect x="110" y="375" width="12" height="12" rx="3" fill={p.point} stroke="none" />
-      <path d="M 113 381 L 115 383 L 119 378" fill="none" stroke={p.paper} strokeWidth={2} />
-      <rect x="135" y="377" width="90" height="8" rx="4" fill={INK} fillOpacity={0.15} stroke="none" />
-      <rect x="270" y="375" width="50" height="12" rx="6" fill={p.b} stroke="none" />
+      <rect
+        x="110"
+        y="375"
+        width="12"
+        height="12"
+        rx="3"
+        fill={p.point}
+        stroke="none"
+      />
+      <path
+        d="M 113 381 L 115 383 L 119 378"
+        fill="none"
+        stroke={p.paper}
+        strokeWidth={2}
+      />
+      <rect
+        x="135"
+        y="377"
+        width="90"
+        height="8"
+        rx="4"
+        fill={INK}
+        fillOpacity={0.15}
+        stroke="none"
+      />
+      <rect
+        x="270"
+        y="375"
+        width="50"
+        height="12"
+        rx="6"
+        fill={p.b}
+        stroke="none"
+      />
     </Obj>
   </Canvas>
 );
@@ -196,11 +428,18 @@ const VisualSpeaking = ({ p }: { p: Palette }) => (
     <Obj>
       {/* 높이를 400으로 늘려 입력창이 안으로 들어오도록 수정 */}
       <rect x="40" y="30" width="320" height="400" rx="24" fill={p.paper} />
-      
+
       {/* 헤더 바 */}
       <rect x="60" y="50" width="280" height="46" rx="14" fill={p.b} />
       <circle cx="90" cy="73" r="12" fill={p.paper} stroke="none" />
-      <text x="115" y="78" fill={INK} fontSize="14" fontWeight={800} stroke="none">
+      <text
+        x="115"
+        y="78"
+        fill={INK}
+        fontSize="14"
+        fontWeight={800}
+        stroke="none"
+      >
         IEUM Chat
       </text>
     </Obj>
@@ -208,32 +447,69 @@ const VisualSpeaking = ({ p }: { p: Palette }) => (
     {/* 말풍선들의 Y위치는 동일(또는 살짝 조정)하게 유지 */}
     <Obj delay={0.1}>
       <rect x="60" y="120" width="150" height="42" rx="16" fill={p.bg} />
-      <text x="80" y="146" fill={INK} fontSize="14" fontWeight={700} stroke="none">
+      <text
+        x="80"
+        y="146"
+        fill={INK}
+        fontSize="14"
+        fontWeight={700}
+        stroke="none"
+      >
         안녕하세요! 👋
       </text>
 
       <rect x="60" y="240" width="164" height="42" rx="16" fill={p.bg} />
-      <text x="80" y="266" fill={INK} fontSize="14" fontWeight={700} stroke="none">
+      <text
+        x="80"
+        y="266"
+        fill={INK}
+        fontSize="14"
+        fontWeight={700}
+        stroke="none"
+      >
         수업 어때요?
       </text>
     </Obj>
 
     <Obj delay={0.18}>
       <rect x="190" y="180" width="150" height="42" rx="16" fill={p.point} />
-      <text x="210" y="206" fill={p.paper} fontSize="14" fontWeight={700} stroke="none">
+      <text
+        x="210"
+        y="206"
+        fill={p.paper}
+        fontSize="14"
+        fontWeight={700}
+        stroke="none"
+      >
         はじめまして！
       </text>
 
       <rect x="190" y="300" width="150" height="42" rx="16" fill={p.point} />
-      <text x="210" y="326" fill={p.paper} fontSize="14" fontWeight={700} stroke="none">
+      <text
+        x="210"
+        y="326"
+        fill={p.paper}
+        fontSize="14"
+        fontWeight={700}
+        stroke="none"
+      >
         とても楽しい！
       </text>
     </Obj>
 
     <Obj delay={0.26}>
       {/* 채팅창 내부에 쏙 들어오는 입력창 */}
-      <rect x="60" y="370" width="220" height="40" rx="20" fill={p.bg} fillOpacity={0.5} stroke="none" />
-      
+      <rect
+        x="60"
+        y="370"
+        width="220"
+        height="40"
+        rx="20"
+        fill={p.bg}
+        fillOpacity={0.5}
+        stroke="none"
+      />
+
       {/* 보내기 버튼 (2시 방향 유지) */}
       <circle cx="320" cy="390" r="20" fill={p.point} stroke="none" />
       <path
@@ -264,9 +540,24 @@ const VisualSupport = ({ p }: { p: Palette }) => (
     {/* 일본 (TOKYO) 깔끔한 마커 */}
     <Obj delay={0.08}>
       <circle cx="100" cy="300" r="18" fill={p.b} stroke="none" />
-      <circle cx="100" cy="300" r="6" fill={p.point} stroke={p.paper} strokeWidth={2.5} />
+      <circle
+        cx="100"
+        cy="300"
+        r="6"
+        fill={p.point}
+        stroke={p.paper}
+        strokeWidth={2.5}
+      />
       <rect x="60" y="330" width="80" height="32" rx="16" fill={p.paper} />
-      <text x="100" y="351" fill={INK} fontSize="13" fontWeight={800} textAnchor="middle" stroke="none">
+      <text
+        x="100"
+        y="351"
+        fill={INK}
+        fontSize="13"
+        fontWeight={800}
+        textAnchor="middle"
+        stroke="none"
+      >
         TOKYO
       </text>
     </Obj>
@@ -274,9 +565,24 @@ const VisualSupport = ({ p }: { p: Palette }) => (
     {/* 한국 (SEOUL) 깔끔한 마커 */}
     <Obj delay={0.16}>
       <circle cx="300" cy="150" r="18" fill={p.b} stroke="none" />
-      <circle cx="300" cy="150" r="6" fill={p.point} stroke={p.paper} strokeWidth={2.5} />
+      <circle
+        cx="300"
+        cy="150"
+        r="6"
+        fill={p.point}
+        stroke={p.paper}
+        strokeWidth={2.5}
+      />
       <rect x="260" y="180" width="80" height="32" rx="16" fill={p.paper} />
-      <text x="300" y="201" fill={INK} fontSize="13" fontWeight={800} textAnchor="middle" stroke="none">
+      <text
+        x="300"
+        y="201"
+        fill={INK}
+        fontSize="13"
+        fontWeight={800}
+        textAnchor="middle"
+        stroke="none"
+      >
         SEOUL
       </text>
     </Obj>
@@ -291,7 +597,14 @@ const VisualSupport = ({ p }: { p: Palette }) => (
           stroke="none"
         />
         {/* 비행기 궤적 이펙트 */}
-        <path d="M -22 0 L -35 0" stroke={p.point} strokeWidth={2} strokeOpacity={0.5} strokeDasharray="3 3" fill="none" />
+        <path
+          d="M -22 0 L -35 0"
+          stroke={p.point}
+          strokeWidth={2}
+          strokeOpacity={0.5}
+          strokeDasharray="3 3"
+          fill="none"
+        />
       </g>
     </Obj>
   </Canvas>
@@ -308,7 +621,7 @@ const FeatureVisual = memo(({ index }: { index: number }) => {
     </div>
   );
 });
-FeatureVisual.displayName = 'FeatureVisual';
+FeatureVisual.displayName = "FeatureVisual";
 
 export const FeaturesSection = memo(() => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -321,24 +634,26 @@ export const FeaturesSection = memo(() => {
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-extrabold text-[#0e2640] tracking-tight">IEUMの特徴</h2>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-[#0e2640] tracking-tight">
+            IEUMの特徴
+          </h2>
         </motion.div>
 
         <div className="relative max-w-4xl mx-auto">
-          <div className="overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-[0_12px_40px_rgba(14,38,64,0.08)]">
-            <div className="flex min-h-[500px] flex-col md:flex-row">
-              <div className="relative min-h-[380px] border-b border-[#16324F]/[0.06] md:min-h-[500px] md:w-1/2 md:border-b-0 md:border-r">
+          <div className="overflow-hidden rounded-4xl border border-slate-100 bg-white shadow-[0_12px_40px_rgba(14,38,64,0.08)]">
+            <div className="flex min-h-125 flex-col md:flex-row">
+              <div className="relative min-h-95 border-b border-[#16324F]/6 md:min-h-125 md:w-1/2 md:border-b-0 md:border-r">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentIndex}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.28, ease: 'easeOut' }}
+                    transition={{ duration: 0.28, ease: "easeOut" }}
                     className="absolute inset-0"
                   >
                     <FeatureVisual index={currentIndex} />
@@ -353,7 +668,7 @@ export const FeaturesSection = memo(() => {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -12 }}
-                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
                   >
                     <span
                       className="mb-4 inline-block rounded-lg px-3.5 py-1.5 text-xs font-bold text-[#16324F]"
@@ -366,7 +681,9 @@ export const FeaturesSection = memo(() => {
                       {feature.title}
                     </h3>
 
-                    <div className="text-sm leading-relaxed text-slate-600 md:text-[15px]">{feature.description}</div>
+                    <div className="text-sm leading-relaxed text-slate-600 md:text-[15px]">
+                      {feature.description}
+                    </div>
                   </motion.div>
                 </AnimatePresence>
               </div>
@@ -383,7 +700,10 @@ export const FeaturesSection = memo(() => {
                 className="h-2 rounded-full transition-all duration-300 cursor-pointer"
                 style={{
                   width: currentIndex === idx ? 48 : 24,
-                  backgroundColor: currentIndex === idx ? PALETTES[idx].point : 'rgba(22,50,79,0.18)',
+                  backgroundColor:
+                    currentIndex === idx
+                      ? PALETTES[idx].point
+                      : "rgba(22,50,79,0.18)",
                 }}
               />
             ))}
@@ -393,4 +713,4 @@ export const FeaturesSection = memo(() => {
     </section>
   );
 });
-FeaturesSection.displayName = 'FeaturesSection';
+FeaturesSection.displayName = "FeaturesSection";

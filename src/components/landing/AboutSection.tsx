@@ -37,7 +37,7 @@ export function AboutSection() {
                   height="1064"
                   alt="IEUM service"
                   src="/images/landing1.png"
-                  className="object-cover w-full h-auto max-h-[460px] lg:max-h-[520px] rounded-2xl block"
+                  className="object-cover w-full h-auto max-h-115 lg:max-h-130 rounded-2xl block"
                   loading="eager"
                   fetchPriority="high"
                 />

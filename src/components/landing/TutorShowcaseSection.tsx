@@ -17,7 +17,13 @@ interface ProfileRecord {
 export async function TutorShowcaseSection() {
   const supabase = await createClient();
 
-  // Supabase DB에서 role이 'tutor'인 프로필 데이터 조회 (최대 6명)
+  // 1. role이 'tutor'인 프로필 총 인원 수 조회 (exact, head: true 로 데이터 전송 없이 카운트만 가져옴)
+  const { count: totalTutorCount } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .eq("role", "tutor");
+
+  // 2. 렌더링할 최대 6명의 튜터 프로필 데이터 조회
   const { data: tutorsData } = await supabase
     .from("profiles")
     .select("*")
@@ -26,18 +32,19 @@ export async function TutorShowcaseSection() {
 
   const rawTutors = (tutorsData as ProfileRecord[]) || [];
 
-  // DB 데이터를 컴포넌트가 원하는 형태로 매핑 (목업 데이터 의존성 완전 제거)
   const tutors: TutorItem[] = rawTutors.map((t) => ({
     id: t.id,
-    name: t.name ?? t.nickname ?? "튜터",
-    university: t.university ?? "대학교",
-    major: t.major ?? "전공",
+    name: t.name ?? t.nickname ?? "チューター",
+    university: t.university ?? "大学",
+    major: t.major ?? "専攻",
     age: t.age ?? 22,
     tags: t.tags ?? ["Frontend", "React"],
-    bio: t.bio ?? "안녕하세요! 튜터입니다.",
+    bio: t.bio ?? "よろしくお願いします！",
     imageUrl: t.profile_image || "/images/unified_profile.png",
   }));
 
-  // 애니메이션 컴포넌트에 DB 데이터 전달
-  return <TutorShowcaseContent tutors={tutors} />;
+  // 실제 DB에 등록된 총 인원 수 전달 (데이터가 없거나 조회 실패 시 기본값 0 처리)
+  const tutorCount = totalTutorCount ?? tutors.length;
+
+  return <TutorShowcaseContent tutors={tutors} totalCount={tutorCount} />;
 }

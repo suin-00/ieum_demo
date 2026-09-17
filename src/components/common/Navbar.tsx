@@ -28,7 +28,7 @@ export function Navbar() {
           {/* Logo */}
           <button
             onClick={() => router.push("/")}
-            className="flex-shrink-0 flex items-center cursor-pointer gap-1 group"
+            className="shrink-0 flex items-center cursor-pointer gap-1 group"
             aria-label="IEUM ホーム"
           >
             <span className="font-extrabold text-2xl tracking-tighter text-[#F5EBBC]">

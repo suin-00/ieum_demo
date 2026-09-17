@@ -255,7 +255,7 @@ const IllustFeedback = () => (
       y="85"
       width="100"
       height="20"
-      rx="6"
+      rx="h-[3px]"
       fill={YELLOW}
       fillOpacity={0.6}
       stroke="none"
@@ -351,14 +351,14 @@ export default function LessonFlowSection() {
             レッスンの流れ
           </h2>
           <span
-            className="h-[3px] w-10 rounded-full"
+            className="h-[3px0.75 w-10 rounded-full"
             style={{ backgroundColor: RED }}
           />
         </div>
 
         <div className="flex items-stretch gap-4 lg:gap-8">
           {/* LEFT — step list (일반 스크롤 영역, 휠 캡처 없음) */}
-          <div className="flex w-full max-w-[280px] shrink-0 flex-col justify-center gap-3">
+          <div className="flex w-full max-w-70 shrink-0 flex-col justify-center gap-3">
             {STEPS.map((s, i) => {
               const active = i === activeIndex;
               return (
@@ -404,7 +404,7 @@ export default function LessonFlowSection() {
           {/* RIGHT — 카드 섹션. 이 영역 위에서만 휠 스크롤이 단계 전환에 반응 */}
           <div
             ref={cardRef}
-            className="flex h-[360px] flex-1 flex-col overflow-hidden rounded-[28px] border border-slate-100 bg-white p-6 shadow-[0_12px_40px_rgba(14,38,64,0.07)] md:h-[400px] md:p-7"
+            className="flex h-90 flex-1 flex-col overflow-hidden rounded-[28px] border border-slate-100 bg-white p-6 shadow-[0_12px_40px_rgba(14,38,64,0.07)] md:h-100 md:p-7"
           >
             <AnimatePresence mode="wait" custom={direction} initial={false}>
               <motion.div
@@ -418,7 +418,7 @@ export default function LessonFlowSection() {
                 className="flex h-full flex-col"
               >
                 <div
-                  className="h-[130px] w-full overflow-hidden rounded-2xl md:h-[150px]"
+                  className="h-32.5 w-full overflow-hidden rounded-2xl md:h-37.5"
                   style={{ backgroundColor: step.illustBg }}
                 >
                   <Illust />

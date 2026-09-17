@@ -19,10 +19,11 @@ export interface TutorItem {
 
 interface TutorShowcaseContentProps {
   tutors: TutorItem[];
+  totalCount: number; // 👈 추가된 prop 타입 정의
 }
 
 export const TutorShowcaseContent = memo(
-  ({ tutors }: TutorShowcaseContentProps) => {
+  ({ tutors, totalCount }: TutorShowcaseContentProps) => {
     return (
       <section className="py-24 bg-white relative overflow-hidden">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,7 +35,8 @@ export const TutorShowcaseContent = memo(
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-extrabold text-[#0e2640] tracking-tight">
-              現在 120名のチューターが在籍中
+              現在 <span className="text-[#23B5D3]">{totalCount}名</span>
+              のチューターが在籍中
             </h2>
           </motion.div>
 
@@ -99,7 +101,7 @@ export const TutorShowcaseContent = memo(
             )}
 
             {/* Gradient overlay to fade out the bottom */}
-            <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-white to-transparent pointer-events-none z-10" />
+            <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-linear-to-t from-white to-transparent pointer-events-none z-10" />
           </div>
         </div>
       </section>
