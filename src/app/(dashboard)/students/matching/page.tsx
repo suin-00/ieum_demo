@@ -21,6 +21,15 @@ export default async function StudentMatchingPage() {
     redirect("/students");
   }
 
-  // 인증 및 리다이렉트가 끝나면 데이터 컨테이너 렌더링
-  return <MatchingContainer />;
+  return (
+    <div className="w-full min-h-[calc(100vh-70px)] flex items-center justify-center px-4 py-6">
+      {/* 
+        scale을 쓰지 않고 max-w와 w-full을 통해 큰 모니터에서도 
+        양옆 공간을 충분히 확보하여 카드가 잘리지 않도록 합니다.
+      */}
+      <div className="w-full max-w-4xl lg:max-w-5xl flex items-center justify-center">
+        <MatchingContainer />
+      </div>
+    </div>
+  );
 }
