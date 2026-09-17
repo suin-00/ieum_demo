@@ -18,8 +18,8 @@ export default function MessageBubble({
       <div
         className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
           isUser
-            ? "bg-[#485B76] text-white rounded-br-none"
-            : "bg-slate-100 text-[#0E2640] rounded-bl-none"
+            ? "bg-[#1e314a] text-white rounded-br-none"
+            : "bg-[#d8e8f2] text-[#0E2640] rounded-bl-none"
         }`}
       >
         <p className="whitespace-pre-wrap">{text}</p>
