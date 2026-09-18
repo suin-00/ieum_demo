@@ -2,6 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import { ChevronLeft } from "lucide-react";
+import { getSafeImageUrl } from "@/lib/utils"; // 👈 유틸 함수가 있는 경로에 맞게 확인
 
 interface ChatItem {
   name: string;
@@ -41,7 +42,9 @@ export default function ChatInfoView({
         {activeChat && (
           <div className="flex flex-col items-center text-center">
             <Image
-              src={activeChat.avatar}
+              src={getSafeImageUrl(
+                activeChat.avatar || "/images/unified_profile.png",
+              )}
               alt={activeChat.name}
               width={56}
               height={56}

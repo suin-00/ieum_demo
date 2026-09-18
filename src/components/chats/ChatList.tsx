@@ -2,6 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import { Search } from "lucide-react";
+import { getSafeImageUrl } from "@/lib/utils"; // 👈 유틸 함수가 있는 경로에 맞게 확인
 
 interface ChatItem {
   id: string;
@@ -117,7 +118,9 @@ export default function ChatListView({
               }`}
             >
               <Image
-                src={chat.avatar}
+                src={getSafeImageUrl(
+                  chat.avatar || "/images/unified_profile.png",
+                )}
                 alt={chat.name}
                 width={36}
                 height={36}

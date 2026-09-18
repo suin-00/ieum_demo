@@ -2,6 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import { ChevronLeft, MoreVertical, Paperclip, Send } from "lucide-react";
+import { getSafeImageUrl } from "@/lib/utils"; // 👈 유틸 함수가 있는 경로에 맞게 확인
 import MessageBubble from "./MessageBubble";
 
 interface ChatItem {
@@ -64,7 +65,7 @@ export default function ChatWindowView({
           {activeChat && (
             <>
               <Image
-                src={activeChat.avatar}
+                src={getSafeImageUrl(activeChat.avatar)}
                 alt={activeChat.name}
                 width={32}
                 height={32}
