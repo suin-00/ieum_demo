@@ -26,8 +26,8 @@ const NAV_CONFIG: Record<UserNavState, NavLink[]> = {
     { label: "レッスンの流れ", href: "/#flow" },
   ],
   STUDENT_UNMATCHED: [
-    { label: "紹介", href: "/" },
-    { label: "プラン", href: "/plan" },
+    { label: "紹介", href: "/students/matching/intro" },
+    { label: "プラン", href: "/students/matching/plan" },
     { label: "マッチング", href: "/students/matching" },
   ],
   STUDENT_MATCHED: [

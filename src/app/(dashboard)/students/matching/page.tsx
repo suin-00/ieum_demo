@@ -4,13 +4,13 @@ import { MatchingContainer } from "./_components/MatchingContainer";
 
 export default async function StudentMatchingPage() {
   const supabase = await createClient();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
 
-  // 이미 매칭된 상태라면 /students로 돌려보내기
   const { data: match } = await supabase
     .from("matches")
     .select("*")
@@ -22,11 +22,11 @@ export default async function StudentMatchingPage() {
   }
 
   return (
-    <div className="w-full min-h-[calc(100vh-70px)] flex items-center justify-center px-4 py-6">
-      {/* 
-        scale을 쓰지 않고 max-w와 w-full을 통해 큰 모니터에서도 
-        양옆 공간을 충분히 확보하여 카드가 잘리지 않도록 합니다.
-      */}
+    /* 
+      💡 pt-6 또는 pt-10 등을 추가하여 상단 패딩을 줄 수 있습니다. 
+      네비바 아래에서 살짝 여유를 두고 시작하고 싶을 때 유용합니다.
+    */
+    <div className="w-full h-[calc(100vh-5rem)] overflow-hidden flex flex-col items-center justify-start pt-8 px-4">
       <div className="w-full max-w-4xl lg:max-w-5xl flex items-center justify-center">
         <MatchingContainer />
       </div>

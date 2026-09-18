@@ -58,6 +58,7 @@ export function TutorDetailModal({
                     src={safeImageUrl}
                     alt={tutor.name}
                     fill
+                    loading="eager"
                     sizes="56px"
                     className="w-full h-full object-cover"
                   />
@@ -117,7 +118,7 @@ export function TutorDetailModal({
                           className="flex items-center gap-2 text-xs font-medium text-slate-700"
                         >
                           <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                            <Check className="w-2.5 h-2.5 text-emerald-600 stroke-[3]" />
+                            <Check className="w-2.5 h-2.5 text-emerald-600 stroke-3" />
                           </div>
                           {reason}
                         </li>
@@ -135,7 +136,7 @@ export function TutorDetailModal({
                   }}
                   className="w-full py-3 bg-[#007AFF] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#0066CC] transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Check className="w-4 h-4 stroke-[3]" />
+                  <Check className="w-4 h-4 stroke-3" />
                   <span>{tutor.name} チューターと相談開始</span>
                 </button>
               </div>
