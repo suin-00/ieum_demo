@@ -13,12 +13,13 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { PeekCard } from "./PeekCard";
-import { TutorDetailModal } from "./TutorDetailModal"; // 👈 분리된 모달 임포트
+import { TutorDetailModal } from "./TutorDetailModal";
 import { getSafeImageUrl } from "@/lib/utils";
 
 export interface Tutor {
   id: string | number;
-  name: string;
+  nickname: string; // 👈 메인으로 사용할 닉네임
+  furigana?: string; // 👈 옆에 띄울 후리가나
   university: string;
   major: string;
   matchScore?: number;
@@ -215,8 +216,8 @@ export function MatchingForm({
                   >
                     <div className="absolute inset-0 w-full h-full overflow-hidden rounded-3xl bg-slate-900 pointer-events-none">
                       <Image
-                        src={currentSafeBgUrl} // 👈 이 부분을 currentSafeBgUrl로 변경합니다!
-                        alt={currentTutor.name}
+                        src={currentSafeBgUrl}
+                        alt={currentTutor.nickname}
                         fill
                         sizes="340px"
                         priority
@@ -256,7 +257,7 @@ export function MatchingForm({
                           <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/90 shadow-md shrink-0 bg-slate-800 relative">
                             <Image
                               src={currentSafeImageUrl}
-                              alt={currentTutor.name}
+                              alt={currentTutor.nickname}
                               fill
                               sizes="48px"
                               className="w-full h-full object-cover"
@@ -264,11 +265,17 @@ export function MatchingForm({
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <h2 className="text-2xl font-extrabold text-white tracking-tight">
-                                {currentTutor.name}{" "}
+                              {/* 👈 닉네임 메인 + 옆에 회색 후리가나 표시 */}
+                              <h2 className="text-xl font-extrabold text-white tracking-tight flex items-baseline gap-2.5">
+                                <span>{currentTutor.nickname}</span>
+                                {currentTutor.furigana && (
+                                  <span className="text-sm font-normal text-white/60">
+                                    {currentTutor.furigana}
+                                  </span>
+                                )}
                                 {currentTutor.age && (
-                                  <span className="text-lg font-normal opacity-90">
-                                    {currentTutor.age}歳
+                                  <span className="text-base font-normal opacity-90">
+                                    ({currentTutor.age}歳)
                                   </span>
                                 )}
                               </h2>
@@ -404,22 +411,28 @@ export function MatchingForm({
                           <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-500/25 shadow-sm shrink-0 bg-slate-100 relative">
                             <Image
                               src={gridSafeImageUrl}
-                              alt={tutor.name}
+                              alt={tutor.nickname}
                               fill
                               sizes="56px"
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                             />
                           </div>
                           <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <h3 className="font-extrabold text-slate-900 text-base">
-                                {tutor.name}
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {/* 👈 그리드 뷰 닉네임 메인 + 옆에 회색 후리가나 */}
+                              <h3 className="font-extrabold text-slate-900 text-base flex items-baseline gap-2">
+                                <span>{tutor.nickname}</span>
+                                {tutor.furigana && (
+                                  <span className="text-xs font-normal text-slate-400">
+                                    {tutor.furigana}
+                                  </span>
+                                )}
+                                {tutor.age && (
+                                  <span className="text-xs text-slate-500 font-medium">
+                                    {tutor.age}歳
+                                  </span>
+                                )}
                               </h3>
-                              {tutor.age && (
-                                <span className="text-xs text-slate-500 font-medium">
-                                  {tutor.age}歳
-                                </span>
-                              )}
                             </div>
                             <p className="text-xs font-semibold text-slate-600 mt-0.5 truncate">
                               {tutor.university} · {tutor.major}
@@ -467,7 +480,6 @@ export function MatchingForm({
             </div>
           )}
 
-          {/* 분리된 상세 모달 컴포넌트 호출 */}
           <TutorDetailModal
             isOpen={isDetailOpen}
             onClose={() => setIsDetailOpen(false)}

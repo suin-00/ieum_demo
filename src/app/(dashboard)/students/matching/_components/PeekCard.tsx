@@ -4,7 +4,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
-import { Tutor } from "./MatchingForm"; // Tutor 타입 경로에 맞게 수정해주세요
+import { Tutor } from "./MatchingForm";
 
 interface PeekCardProps {
   tutor: Tutor;
@@ -88,8 +88,8 @@ export const PeekCard = React.forwardRef<HTMLDivElement, PeekCardProps>(
       >
         <div className="absolute inset-0 w-full h-full overflow-hidden bg-slate-900 pointer-events-none">
           <Image
-            src={safeImageUrl}
-            alt={tutor.name}
+            src={getSafeImageUrl(tutor.backgroundUrl)}
+            alt={tutor.nickname} // 👈 name 대신 nickname 사용
             fill
             sizes="340px"
             className="w-full h-full object-cover pointer-events-none"
@@ -122,16 +122,22 @@ export const PeekCard = React.forwardRef<HTMLDivElement, PeekCardProps>(
             <div className="w-9 h-9 rounded-full overflow-hidden border border-white/80 shadow-xs shrink-0 bg-slate-800 relative">
               <Image
                 src={safeImageUrl}
-                alt={tutor.name}
+                alt={tutor.nickname} // 👈 name 대신 nickname 사용
                 fill
                 sizes="36px"
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-base font-extrabold truncate">
-                  {tutor.name}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {/* 👈 닉네임 메인 + 옆에 회색 후리가나 표시 */}
+                <span className="text-base font-extrabold truncate flex items-baseline gap-1.5">
+                  <span>{tutor.nickname}</span>
+                  {tutor.furigana && (
+                    <span className="text-xs font-normal text-white/60">
+                      {tutor.furigana}
+                    </span>
+                  )}
                 </span>
                 {tutor.age && (
                   <span className="text-xs opacity-90">{tutor.age}歳</span>
