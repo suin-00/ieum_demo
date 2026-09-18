@@ -10,22 +10,26 @@ import {
   ChevronRight,
   RotateCcw,
   MessageCircle,
+  X, // 👈 이미지 뷰어 닫기 버튼용 아이콘 추가
 } from "lucide-react";
 import Image from "next/image";
 import { PeekCard } from "./PeekCard";
 import { TutorDetailModal } from "./TutorDetailModal";
+import { MatchPlanModal } from "./MatchPlanModal";
 import { getSafeImageUrl } from "@/lib/utils";
+import { createMatch, MatchResult } from "@/actions/student/matchingActions";
 
 export interface Tutor {
   id: string | number;
-  nickname: string; // 👈 메인으로 사용할 닉네임
-  furigana?: string; // 👈 옆에 띄울 후리가나
+  nickname: string;
+  furigana?: string;
   university: string;
   major: string;
   matchScore?: number;
   matchReasons?: string[];
   imageUrl: string;
   backgroundUrl: string;
+  backgroundUrls?: string[]; // 👈 여러 배경 사진을 지원하기 위해 추가
   bio?: string;
   age?: number;
   tags?: string[];
@@ -85,6 +89,10 @@ export function MatchingForm({
   onStartChat,
 }: MatchingFormProps) {
   const router = useRouter();
+
+  // ==========================================
+  // 모든 훅은 컴포넌트 최상단에 배치
+  // ==========================================
   const [tutors] = useState<Tutor[]>(initialTutors);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -94,12 +102,70 @@ export function MatchingForm({
   );
   const [isGridView, setIsGridView] = useState(false);
 
-  const handleStartChatSession = (tutor: Tutor) => {
-    if (onStartChat) {
-      onStartChat(tutor);
-    } else {
-      router.push(`/chats/${tutor.id}`);
+  // 플랜 선택 모달 상태
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+  const [targetTutor, setTargetTutor] = useState<Tutor | null>(null);
+
+  // 💡 이미지 뷰어 상태 추가
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const [viewerImages, setViewerImages] = useState<string[]>([]);
+  const [currentViewIndex, setCurrentViewIndex] = useState(0);
+
+  // 1. 프로필 사진 클릭 핸들러
+  const handleProfileClick = (e: React.MouseEvent, imageUrl: string) => {
+    e.stopPropagation();
+    setViewerImages([getSafeImageUrl(imageUrl)]);
+    setCurrentViewIndex(0);
+    setIsImageViewerOpen(true);
+  };
+
+  // 2. 배경 사진 클릭 핸들러 (여러 장이면 배열로 렌더링)
+  const handleBackgroundClick = (e: React.MouseEvent, tutor: Tutor) => {
+    e.stopPropagation();
+    const bgUrls =
+      tutor.backgroundUrls && tutor.backgroundUrls.length > 0
+        ? tutor.backgroundUrls
+        : [tutor.backgroundUrl || tutor.imageUrl];
+
+    setViewerImages(bgUrls.map((url) => getSafeImageUrl(url)));
+    setCurrentViewIndex(0);
+    setIsImageViewerOpen(true);
+  };
+
+  const handleOpenMatchModal = (tutor: Tutor) => {
+    setTargetTutor(tutor);
+    setIsPlanModalOpen(true);
+  };
+
+  const handleConfirmPlanAndMatch = async (sessions: number) => {
+    if (!targetTutor) return;
+
+    try {
+      const result: MatchResult = await createMatch(
+        String(targetTutor.id),
+        sessions,
+      );
+
+      if (!result.success) {
+        alert(`매칭 요청 실패: ${result.error}`);
+        return;
+      }
+
+      setIsPlanModalOpen(false);
+
+      if (onStartChat) {
+        onStartChat(targetTutor);
+      } else {
+        router.push(`/students`);
+      }
+    } catch (err: unknown) {
+      console.error("매칭 처리 중 예외 발생:", err);
+      alert("매칭 처리 중 오류가 발생했습니다.");
     }
+  };
+
+  const handleStartChatSession = async (tutor: Tutor) => {
+    handleOpenMatchModal(tutor);
   };
 
   const handleNext = useCallback(() => {
@@ -120,7 +186,7 @@ export function MatchingForm({
 
   const handleMatch = () => {
     if (tutors[currentIndex]) {
-      handleStartChatSession(tutors[currentIndex]);
+      handleOpenMatchModal(tutors[currentIndex]);
     }
   };
 
@@ -135,13 +201,13 @@ export function MatchingForm({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isDetailOpen || isGridView) return;
+      if (isDetailOpen || isGridView || isImageViewerOpen) return;
       if (e.key === "ArrowRight") handleNext();
       else if (e.key === "ArrowLeft") handlePrev();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleNext, handlePrev, isDetailOpen, isGridView]);
+  }, [handleNext, handlePrev, isDetailOpen, isGridView, isImageViewerOpen]);
 
   if (!isOpen) return null;
 
@@ -214,13 +280,18 @@ export function MatchingForm({
                     className={`absolute inset-0 w-full h-full overflow-hidden rounded-3xl shadow-2xl ${isDetailOpen ? "z-50" : "z-20"} cursor-grab active:cursor-grabbing border border-white/20 select-none`}
                     style={{ transformOrigin: "center center" }}
                   >
-                    <div className="absolute inset-0 w-full h-full overflow-hidden rounded-3xl bg-slate-900 pointer-events-none">
+                    {/* 💡 배경 사진 영역 (클릭 가능하게 수정) */}
+                    <div
+                      className="absolute inset-0 w-full h-full overflow-hidden rounded-3xl bg-slate-900 pointer-events-auto cursor-pointer"
+                      onClick={(e) => handleBackgroundClick(e, currentTutor)}
+                    >
                       <Image
                         src={currentSafeBgUrl}
                         alt={currentTutor.nickname}
                         fill
                         sizes="340px"
                         priority
+                        loading="eager"
                         className="w-full h-full object-cover pointer-events-none"
                       />
                     </div>
@@ -254,33 +325,43 @@ export function MatchingForm({
                     >
                       <div className="flex justify-between items-end gap-2">
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/90 shadow-md shrink-0 bg-slate-800 relative">
+                          {/* 💡 프로필 사진 영역 (클릭 가능하게 수정) */}
+                          <div
+                            className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/90 shadow-md shrink-0 bg-slate-800 relative cursor-pointer hover:scale-105 transition-transform"
+                            onClick={(e) =>
+                              handleProfileClick(e, currentTutor.imageUrl)
+                            }
+                          >
                             <Image
                               src={currentSafeImageUrl}
                               alt={currentTutor.nickname}
                               fill
+                              loading="eager"
                               sizes="48px"
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              {/* 👈 닉네임 메인 + 옆에 회색 후리가나 표시 */}
-                              <h2 className="text-xl font-extrabold text-white tracking-tight flex items-baseline gap-2.5">
-                                <span>{currentTutor.nickname}</span>
-                                {currentTutor.furigana && (
-                                  <span className="text-sm font-normal text-white/60">
-                                    {currentTutor.furigana}
-                                  </span>
-                                )}
-                                {currentTutor.age && (
-                                  <span className="text-base font-normal opacity-90">
-                                    ({currentTutor.age}歳)
-                                  </span>
-                                )}
-                              </h2>
-                            </div>
-                            <p className="text-xs font-medium text-white/95 mt-0.5 tracking-wide truncate">
+                          <div className="min-w-0 flex-1">
+                            {/* 💡 text-base (모바일) -> sm:text-xl (PC) 로 폰트 크기 반응형 적용 */}
+                            <h2 className="text-base sm:text-xl font-extrabold text-white tracking-tight flex items-baseline gap-1 sm:gap-2.5 whitespace-nowrap">
+                              <span>{currentTutor.nickname}</span>
+
+                              {currentTutor.furigana && (
+                                // 💡 text-[10px] (모바일) -> sm:text-sm (PC)
+                                <span className="text-[10px] sm:text-sm font-normal text-white/60">
+                                  {currentTutor.furigana}
+                                </span>
+                              )}
+
+                              {currentTutor.age && (
+                                // 💡 text-xs (모바일) -> sm:text-base (PC)
+                                <span className="text-xs sm:text-base font-normal opacity-90">
+                                  ({currentTutor.age}歳)
+                                </span>
+                              )}
+                            </h2>
+
+                            <p className="text-[11px] sm:text-xs font-medium text-white/95 mt-0.5 tracking-wide truncate">
                               {currentTutor.university} · {currentTutor.major}
                             </p>
                           </div>
@@ -408,18 +489,23 @@ export function MatchingForm({
                     >
                       <div>
                         <div className="flex items-center gap-3.5 mb-4">
-                          <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-500/25 shadow-sm shrink-0 bg-slate-100 relative">
+                          <div
+                            className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-500/25 shadow-sm shrink-0 bg-slate-100 relative cursor-pointer hover:scale-105 transition-transform z-10"
+                            onClick={(e) =>
+                              handleProfileClick(e, tutor.imageUrl)
+                            }
+                          >
                             <Image
                               src={gridSafeImageUrl}
                               alt={tutor.nickname}
                               fill
+                              loading="eager"
                               sizes="56px"
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                             />
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              {/* 👈 그리드 뷰 닉네임 메인 + 옆에 회색 후리가나 */}
                               <h3 className="font-extrabold text-slate-900 text-base flex items-baseline gap-2">
                                 <span>{tutor.nickname}</span>
                                 {tutor.furigana && (
@@ -496,6 +582,90 @@ export function MatchingForm({
       >
         <MessageCircle className="w-7 h-7" />
       </button>
+
+      <MatchPlanModal
+        isOpen={isPlanModalOpen}
+        onClose={() => setIsPlanModalOpen(false)}
+        tutor={targetTutor}
+        onConfirmPlan={handleConfirmPlanAndMatch}
+      />
+
+      {/* ========================================== */}
+      {/* 💡 전체화면 이미지 뷰어 모달 */}
+      {/* ========================================== */}
+      <AnimatePresence>
+        {isImageViewerOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center"
+            onClick={() => setIsImageViewerOpen(false)}
+          >
+            {/* 닫기 버튼 */}
+            <button
+              className="absolute top-6 right-6 text-white/70 hover:text-white p-2 bg-white/10 hover:bg-white/20 rounded-full transition cursor-pointer z-50"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsImageViewerOpen(false);
+              }}
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            {/* 여러 장일 경우 화살표 표시 */}
+            {viewerImages.length > 1 && (
+              <>
+                <button
+                  className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-3 bg-black/50 hover:bg-black/80 rounded-full transition cursor-pointer z-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentViewIndex((prev) =>
+                      prev > 0 ? prev - 1 : viewerImages.length - 1,
+                    );
+                  }}
+                >
+                  <ChevronLeft className="w-8 h-8" />
+                </button>
+                <button
+                  className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-3 bg-black/50 hover:bg-black/80 rounded-full transition cursor-pointer z-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentViewIndex((prev) =>
+                      prev < viewerImages.length - 1 ? prev + 1 : 0,
+                    );
+                  }}
+                >
+                  <ChevronRight className="w-8 h-8" />
+                </button>
+              </>
+            )}
+
+            {/* 메인 이미지 */}
+            <div
+              className="relative w-full h-full max-w-7xl max-h-[90vh] flex items-center justify-center p-4 sm:p-12"
+              onClick={(e) => e.stopPropagation()} // 이미지 클릭 시 닫히지 않도록
+            >
+              <Image
+                src={viewerImages[currentViewIndex]}
+                alt="Enlarged View"
+                fill
+                loading="eager"
+                className="object-contain"
+                sizes="(max-width: 1280px) 100vw, 1280px"
+                priority
+              />
+            </div>
+
+            {/* 페이지네이션 뱃지 */}
+            {viewerImages.length > 1 && (
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/60 px-5 py-2 rounded-full text-white text-sm font-bold tracking-widest z-50 border border-white/20">
+                {currentViewIndex + 1} / {viewerImages.length}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

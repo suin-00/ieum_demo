@@ -3,8 +3,8 @@ import { MatchingForm } from "./MatchingForm";
 
 interface ComponentProfile {
   id: string;
-  nickname?: string; // 👈 메인으로 사용할 닉네임
-  furigana?: string; // 👈 옆에 띄울 후리가나
+  nickname?: string;
+  furigana?: string;
   first_name?: string;
   last_name?: string;
   birth_date?: string | null;
@@ -13,7 +13,8 @@ interface ComponentProfile {
     major?: string;
     style?: string[] | string;
     profile_image?: string;
-    background_image?: string[] | string;
+    background_image?: string[] | string; // 👈 Supabase에서 배열이나 문자열로 넘어옴
+    bio?: string;
   } | null;
   [key: string]: unknown;
 }
@@ -36,7 +37,6 @@ const calculateAge = (birthDateString?: string | null): number | undefined => {
 export async function MatchingContainer() {
   const supabase = await createClient();
 
-  // name을 아예 제외하고 조회
   const { data: tutorsData, error } = await supabase
     .from("profiles")
     .select(
@@ -52,7 +52,8 @@ export async function MatchingContainer() {
         major,
         style,
         profile_image,
-        background_image
+        background_image,
+        bio
       )
     `,
     )
@@ -67,10 +68,21 @@ export async function MatchingContainer() {
   const tutors = rawTutors.map((t) => {
     const tutorInfo = t.tutors;
 
+    // 💡 1. 배경 이미지 배열 파싱
     const rawBg = tutorInfo?.background_image;
-    const backgroundUrl = Array.isArray(rawBg)
-      ? rawBg[0]
-      : ((rawBg as string) ?? "/images/background.png");
+    let bgUrlsArray: string[] = [];
+
+    if (Array.isArray(rawBg)) {
+      bgUrlsArray = rawBg; // 배열이면 그대로 사용
+    } else if (typeof rawBg === "string" && rawBg.trim() !== "") {
+      bgUrlsArray = [rawBg]; // 단일 문자열이면 배열로 감싸기
+    }
+
+    // 💡 2. 썸네일용(첫 번째) 배경과 전체 배경 배열 분리
+    const backgroundUrl =
+      bgUrlsArray.length > 0 ? bgUrlsArray[0] : "/images/background.png";
+    const backgroundUrls =
+      bgUrlsArray.length > 0 ? bgUrlsArray : ["/images/background.png"];
 
     const birthDateStr = t.birth_date
       ? new Date(t.birth_date).toISOString().split("T")[0]
@@ -86,10 +98,12 @@ export async function MatchingContainer() {
         : [tutorStyle];
     }
 
+    const tutorBio = tutorInfo?.bio || "";
+
     return {
       id: t.id,
-      nickname: t.nickname ?? "튜터", // 👈 닉네임 매핑
-      furigana: t.furigana ?? "", // 👈 후리가나 매핑
+      nickname: t.nickname ?? "튜터",
+      furigana: t.furigana ?? "",
       firstName: t.first_name ?? "",
       lastName: t.last_name ?? "",
       birthDate: birthDateStr,
@@ -98,8 +112,12 @@ export async function MatchingContainer() {
       major: tutorInfo?.major ?? "전공",
       imageUrl:
         (tutorInfo?.profile_image as string) ?? "/images/unified_profile.png",
+
+      // 💡 3. 분리한 배경 정보 할당
       backgroundUrl: backgroundUrl,
-      bio: "",
+      backgroundUrls: backgroundUrls, // 전체 사진 배열 전달
+
+      bio: tutorBio,
       tags: formattedTags,
     };
   });

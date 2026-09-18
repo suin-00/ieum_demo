@@ -4,7 +4,7 @@ import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, Check } from "lucide-react";
 import Image from "next/image";
-import { Tutor } from "./MatchingForm"; // Tutor 타입 경로에 맞게 수정해주세요
+import { Tutor } from "./MatchingForm";
 import { getSafeImageUrl } from "@/lib/utils";
 
 interface TutorDetailModalProps {
@@ -56,7 +56,7 @@ export function TutorDetailModal({
                 <div className="w-14 h-14 rounded-full overflow-hidden bg-slate-100 shrink-0 border-2 border-slate-200 shadow-sm relative">
                   <Image
                     src={safeImageUrl}
-                    alt={tutor.name}
+                    alt={tutor.nickname}
                     fill
                     loading="eager"
                     sizes="56px"
@@ -64,15 +64,20 @@ export function TutorDetailModal({
                   />
                 </div>
                 <div>
-                  <div className="flex items-center gap-1.5">
-                    <h4 className="font-extrabold text-slate-900 text-base">
-                      {tutor.name}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <h4 className="font-extrabold text-slate-900 text-base flex items-baseline gap-2">
+                      <span>{tutor.nickname}</span>
+                      {tutor.furigana && (
+                        <span className="text-xs font-normal text-slate-400">
+                          {tutor.furigana}
+                        </span>
+                      )}
+                      {tutor.age && (
+                        <span className="text-xs text-slate-500 font-medium">
+                          {tutor.age}歳
+                        </span>
+                      )}
                     </h4>
-                    {tutor.age && (
-                      <span className="text-xs text-slate-500 font-medium">
-                        {tutor.age}歳
-                      </span>
-                    )}
                   </div>
                   <p className="text-xs text-slate-600 mt-0.5">
                     {tutor.university} · {tutor.major}
@@ -95,9 +100,9 @@ export function TutorDetailModal({
                     専門分野 & 技術スタック
                   </h4>
                   <div className="flex flex-wrap gap-1.5">
-                    {tutor.tags?.map((tag) => (
+                    {tutor.tags?.map((tag, index) => (
                       <span
-                        key={tag}
+                        key={`${tag}-${index}`}
                         className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg text-[11px] font-bold border border-blue-100"
                       >
                         {tag}
@@ -112,9 +117,9 @@ export function TutorDetailModal({
                       おすすめポイント
                     </h4>
                     <ul className="space-y-2">
-                      {tutor.matchReasons.map((reason) => (
+                      {tutor.matchReasons.map((reason, index) => (
                         <li
-                          key={reason}
+                          key={`${reason}-${index}`}
                           className="flex items-center gap-2 text-xs font-medium text-slate-700"
                         >
                           <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
@@ -137,7 +142,7 @@ export function TutorDetailModal({
                   className="w-full py-3 bg-[#007AFF] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#0066CC] transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Check className="w-4 h-4 stroke-3" />
-                  <span>{tutor.name} チューターと相談開始</span>
+                  <span>{tutor.nickname} チューターと相談開始</span>
                 </button>
               </div>
             </div>

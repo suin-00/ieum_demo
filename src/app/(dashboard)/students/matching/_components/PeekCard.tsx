@@ -91,6 +91,7 @@ export const PeekCard = React.forwardRef<HTMLDivElement, PeekCardProps>(
             src={getSafeImageUrl(tutor.backgroundUrl)}
             alt={tutor.nickname} // 👈 name 대신 nickname 사용
             fill
+            loading="eager"
             sizes="340px"
             className="w-full h-full object-cover pointer-events-none"
           />
@@ -124,6 +125,7 @@ export const PeekCard = React.forwardRef<HTMLDivElement, PeekCardProps>(
                 src={safeImageUrl}
                 alt={tutor.nickname} // 👈 name 대신 nickname 사용
                 fill
+                loading="eager"
                 sizes="36px"
                 className="w-full h-full object-cover"
               />

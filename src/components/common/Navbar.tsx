@@ -31,8 +31,8 @@ const NAV_CONFIG: Record<UserNavState, NavLink[]> = {
     { label: "マッチング", href: "/students/matching" },
   ],
   STUDENT_MATCHED: [
-    { label: "紹介", href: "/" },
-    { label: "プラン", href: "/plan" },
+    { label: "スケジュール", href: "/students/schedule" },
+    { label: "レッスン", href: "/students" },
     { label: "チャット", href: "/chats" },
   ],
   TUTOR: [
