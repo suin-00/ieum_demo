@@ -83,6 +83,7 @@ export async function createTutorAccount(
     }
 
     // 3. tutors 테이블에 튜터 상세 정보 저장
+    // 3. tutors 테이블에 튜터 상세 정보 및 이미지 저장
     const { error: tutorError } = await supabaseAdmin.from("tutors").upsert([
       {
         id: userId,
@@ -91,6 +92,8 @@ export async function createTutorAccount(
         style: sanitizeStyles(formData.style),
         mbti: formData.mbti,
         bio: formData.bio,
+        profile_image: formData.profile_image ?? null, // 👈 추가
+        background_image: formData.background_image ?? null, // 👈 추가
         rating: 0.0,
         review_count: 0,
         max_students: 5,
@@ -198,6 +201,8 @@ export async function updateTutorAccount(
         style: sanitizeStyles(formData.style),
         mbti: formData.mbti,
         bio: formData.bio,
+        profile_image: formData.profile_image ?? null, // 👈 추가
+        background_image: formData.background_image ?? null, // 👈 추가
       })
       .eq("id", tutorId);
 

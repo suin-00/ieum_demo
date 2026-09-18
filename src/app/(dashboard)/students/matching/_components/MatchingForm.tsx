@@ -24,6 +24,7 @@ export interface Tutor {
   matchScore?: number;
   matchReasons?: string[];
   imageUrl: string;
+  backgroundUrl: string;
   bio?: string;
   age?: number;
   tags?: string[];
@@ -159,6 +160,9 @@ export function MatchingForm({
   const prevTutor = currentIndex > 0 ? tutors[currentIndex - 1] : null;
   const activeDetailTutor = selectedDetailTutor || currentTutor;
   const currentSafeImageUrl = getSafeImageUrl(currentTutor?.imageUrl);
+  const currentSafeBgUrl = getSafeImageUrl(
+    currentTutor?.backgroundUrl || currentTutor?.imageUrl,
+  );
 
   return (
     <div className="w-full min-h-screen bg-[#F8FAFC] flex flex-col relative">
@@ -211,7 +215,7 @@ export function MatchingForm({
                   >
                     <div className="absolute inset-0 w-full h-full overflow-hidden rounded-3xl bg-slate-900 pointer-events-none">
                       <Image
-                        src={currentSafeImageUrl}
+                        src={currentSafeBgUrl} // 👈 이 부분을 currentSafeBgUrl로 변경합니다!
                         alt={currentTutor.name}
                         fill
                         sizes="340px"

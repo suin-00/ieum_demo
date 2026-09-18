@@ -40,6 +40,8 @@ export interface CreateTutorInput {
   style: TutorStyle[];
   mbti: string;
   bio: string;
+  profile_image?: string | null;
+  background_image?: string[] | null;
 }
 
 export type UpdateTutorInput = Omit<CreateTutorInput, "email">;
