@@ -12,7 +12,7 @@ export interface HeroIntroSectionProps {
 
 export default function HeroIntroSection({ ctaButton }: HeroIntroSectionProps) {
   return (
-    <div className="flex flex-col w-full overflow-x-hidden">
+    <div className="flex flex-col w-full">
       {/* 
         - 기본/14인치 구간: scale-95로 너무 크지 않게 적당히 밀착
         - lg(15인치 이상 모니터): scale-105로 시원하게 확대

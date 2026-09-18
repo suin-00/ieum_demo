@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
+import { FadeIn } from "./FadeIn";
 
 // 모든 줄이 동시에 시작하도록 딜레이를 통일한 타이핑 컴포넌트
 function TypewriterFadeParagraph({
@@ -142,19 +143,31 @@ export function AboutSection() {
         </div>
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center relative z-10">
-          <h3 className="text-2xl sm:text-3xl lg:text-[45px] font-bold not-italic text-white mb-8 tracking-tight leading-snug">
-            私たちは、一方的に韓国語を教える
-            <br className="hidden sm:inline" />
-            チューターではありません。
-          </h3>
+          {/* 👇 FadeIn 컴포넌트로 감싸주어 아래에서 스윽 위로 올라오게 설정 */}
+          <FadeIn direction="up" delay={0.1}>
+            <h3 className="text-2xl sm:text-3xl lg:text-[45px] font-bold not-italic text-white mb-8 tracking-tight leading-snug">
+              私たちは、一方的に韓国語を教える
+              <br className="hidden sm:inline" />
+              チューターではありません。
+            </h3>
+          </FadeIn>
 
           <p className="text-[#F0DDBD] text-lg sm:text-xl leading-relaxed sm:leading-loose mb-8 max-w-3xl mx-auto">
             同じキャンパスや大学生活を一足先に経験した先輩として、
             <br className="hidden sm:inline" />
             履修登録、寮生活、サークル、友人関係、グループワーク、大学文化など、
             <br className="hidden sm:inline" />
-            <span className="relative inline-block mx-1 px-2 py-0.5 rounded-sm bg-[#F6E374] text-[#0E2640] font-bold shadow-xs">
-              リアルな韓国の大学生活
+            {/* 👇 노란색 박스에 스르륵 차오르는 애니메이션 적용 */}
+            <span className="relative inline-block mx-1 px-2 py-0.5 rounded-sm text-[#0E2640] font-bold shadow-xs">
+              <span className="relative z-10">リアルな韓国の大学生活</span>
+              <motion.span
+                initial={{ scaleX: 0 }}
+                whileInView={{ scaleX: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, delay: 0.4, ease: "easeOut" }}
+                style={{ originX: 0 }}
+                className="absolute inset-0 bg-[#F6E374] z-0 rounded-sm inline-block"
+              />
             </span>
             を共有します。
           </p>

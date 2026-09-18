@@ -90,3 +90,22 @@ body {
 .animate-float-delayed {
   animation: float-delayed 5s ease-in-out 1.5s infinite;
 }
+
+@layer utilities {
+  /* 웹킷 브라우저 (Chrome, Safari, Edge) 스크롤바 숨기기 */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* 파이어폭스, IE 스크롤바 숨기기 */
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
+@layer base {
+  html,
+  body {
+    overflow-x: clip;
+  }
+}

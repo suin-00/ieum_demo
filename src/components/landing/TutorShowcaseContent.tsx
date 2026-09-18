@@ -1,7 +1,7 @@
 "use client";
 
 import React, { memo } from "react";
-import { motion } from "motion/react";
+import { motion, Variants } from "motion/react";
 import Image from "next/image";
 
 const UNIFIED_PROFILE_IMAGE = "/images/unified_profile.png";
@@ -19,8 +19,35 @@ export interface TutorItem {
 
 interface TutorShowcaseContentProps {
   tutors: TutorItem[];
-  totalCount: number; // 👈 추가된 prop 타입 정의
+  totalCount: number;
 }
+
+// 1. 부모 컨테이너: 카드들이 순차적으로 나타나도록 시차(stagger) 부여
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+    },
+  },
+};
+
+// 2. 개별 카드 애니메이션
+const cardVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 35,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.7,
+      ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+    },
+  },
+};
 
 export const TutorShowcaseContent = memo(
   ({ tutors, totalCount }: TutorShowcaseContentProps) => {
@@ -40,20 +67,24 @@ export const TutorShowcaseContent = memo(
             </h2>
           </motion.div>
 
-          {/* Grid Container */}
-          <div
-            className="relative overflow-hidden"
-            style={{ maxHeight: "520px" }}
-          >
+          {/* Grid Container: 높이 제한(maxHeight)과 overflow-hidden을 제거하여 자연스러운 흐름 유지 */}
+          <div className="relative w-full">
             {tutors.length === 0 ? (
               <div className="text-center text-slate-400 py-12 text-sm">
                 現在登録されているチューターがいません。
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full pointer-events-none select-none">
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-80px" }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full select-none"
+              >
                 {tutors.map((tutor, idx) => (
-                  <div
+                  <motion.div
                     key={`${tutor.id}-${idx}`}
+                    variants={cardVariants}
                     className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between"
                   >
                     <div>
@@ -95,13 +126,10 @@ export const TutorShowcaseContent = memo(
                         {tutor.bio}
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             )}
-
-            {/* Gradient overlay to fade out the bottom */}
-            <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-linear-to-t from-white to-transparent pointer-events-none z-10" />
           </div>
         </div>
       </section>

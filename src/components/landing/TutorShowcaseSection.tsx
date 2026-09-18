@@ -1,5 +1,4 @@
-import React from "react";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { TutorShowcaseContent, TutorItem } from "./TutorShowcaseContent";
 
 interface ProfileRecord {
@@ -15,7 +14,7 @@ interface ProfileRecord {
 }
 
 export async function TutorShowcaseSection() {
-  const supabase = await createClient();
+  const supabase = await createPublicClient();
 
   // 1. role이 'tutor'인 프로필 총 인원 수 조회 (exact, head: true 로 데이터 전송 없이 카운트만 가져옴)
   const { count: totalTutorCount } = await supabase
