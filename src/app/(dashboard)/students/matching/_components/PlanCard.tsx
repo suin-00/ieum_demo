@@ -178,7 +178,7 @@ export default function PlanCard({
 
                 <div className="flex items-center gap-2">
                   <span className="bg-[#0e2640] text-[#F5EBBC] text-[10px] font-bold px-1.5 py-0.5 rounded-md">
-                    10.53% OFF
+                    約10% OFF
                   </span>
 
                   <span className="text-base font-bold text-[#0e2640]">
