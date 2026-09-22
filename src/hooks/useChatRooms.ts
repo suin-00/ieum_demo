@@ -27,8 +27,14 @@ interface ProfileResponse {
   profile_image?: string;
 }
 
-interface MemberResponse {
+interface StudentMemberResponse {
   id: string;
+  profiles: ProfileResponse | ProfileResponse[] | null;
+}
+
+interface TutorMemberResponse {
+  id: string;
+  profile_image?: string; // 👈 튜터 테이블의 profile_image
   profiles: ProfileResponse | ProfileResponse[] | null;
 }
 
@@ -36,8 +42,8 @@ interface MatchResponse {
   id: string;
   student_id: string;
   tutor_id: string;
-  students: MemberResponse | MemberResponse[] | null;
-  tutors: MemberResponse | MemberResponse[] | null;
+  students: StudentMemberResponse | StudentMemberResponse[] | null;
+  tutors: TutorMemberResponse | TutorMemberResponse[] | null;
 }
 
 interface ChatRoomResponse {
@@ -110,7 +116,7 @@ export function useChatRooms() {
               student_id,
               tutor_id,
               students ( id, profiles ( nickname, profile_image ) ),
-              tutors ( id, image_url, profiles ( nickname ) ) 
+              tutors ( id, profile_image, profiles ( nickname ) ) 
             )
           `,
           )
@@ -137,22 +143,51 @@ export function useChatRooms() {
         const formattedChats: ChatItem[] = rawRooms.map((room) => {
           const match = room.matches;
           const isMeStudent = match.student_id === currentUser.id;
-          const rawPartner = isMeStudent ? match.tutors : match.students;
-          const member = Array.isArray(rawPartner) ? rawPartner[0] : rawPartner;
-          const rawProfiles = member?.profiles;
-          const partnerProfile = Array.isArray(rawProfiles)
-            ? rawProfiles[0]
-            : rawProfiles;
+
+          let partnerName = "상대방";
+          let partnerAvatar = "";
+
+          if (isMeStudent) {
+            // 내가 학생일 때 -> 상대방은 튜터 (tutors 테이블 소속)
+            const rawTutor = match.tutors;
+            const tutorMember = Array.isArray(rawTutor)
+              ? rawTutor[0]
+              : rawTutor;
+
+            const rawProfiles = tutorMember?.profiles;
+            const tutorProfile = Array.isArray(rawProfiles)
+              ? rawProfiles[0]
+              : rawProfiles;
+
+            partnerName = tutorProfile?.nickname ?? "튜터";
+            // 💡 튜터 테이블에 있는 profile_image 사용
+            partnerAvatar = tutorMember?.profile_image ?? "";
+          } else {
+            // 내가 튜터일 때 -> 상대방은 학생 (profiles 테이블 소속)
+            const rawStudent = match.students;
+            const studentMember = Array.isArray(rawStudent)
+              ? rawStudent[0]
+              : rawStudent;
+
+            const rawProfiles = studentMember?.profiles;
+            const studentProfile = Array.isArray(rawProfiles)
+              ? rawProfiles[0]
+              : rawProfiles;
+
+            partnerName = studentProfile?.nickname ?? "학생";
+            // 💡 학생은 profiles 테이블에 있는 profile_image 사용
+            partnerAvatar = studentProfile?.profile_image ?? "";
+          }
 
           return {
             id: room.id,
             match_id: room.match_id,
-            name: partnerProfile?.nickname ?? "상대방",
+            name: partnerName,
             role: isMeStudent ? "Tutor" : "Student",
             lastMessage: "대화 내용이 없습니다.",
             time: "",
             unread: false,
-            avatar: partnerProfile?.profile_image ?? "",
+            avatar: partnerAvatar,
           };
         });
 
