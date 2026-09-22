@@ -26,7 +26,7 @@ export default function MessageBubble({
     fileUrl = parts[1];
   }
 
-  // 2. 이미지 확장자 파일인지 판별
+  // 2. 이미지 확장자 파일인지 판별 (대소문자 구분 없이)
   const isImageFile =
     isFileMessage && /\.(jpg|jpeg|png|gif|webp)$/i.test(fileName);
 
@@ -49,12 +49,18 @@ export default function MessageBubble({
                 href={fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block overflow-hidden rounded-lg"
+                /* 1번 방법 적용: 
+                  fill 속성을 사용하는 Image의 부모 요소는 반드시 relative 속성과 
+                  명확한 width/height(또는 aspect-ratio)가 지정되어 있어야 합니다.
+                */
+                className="relative block w-48 h-36 overflow-hidden rounded-lg hover:opacity-95 transition"
               >
                 <Image
                   src={fileUrl}
-                  alt={fileName}
-                  className="max-w-full h-auto max-h-48 object-cover rounded-lg hover:opacity-95 transition"
+                  alt={fileName || "채팅 이미지"}
+                  fill
+                  className="object-cover rounded-lg"
+                  sizes="(max-width: 768px) 100vw, 200px"
                 />
               </a>
             ) : (

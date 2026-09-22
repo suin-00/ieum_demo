@@ -28,14 +28,17 @@ export default function LoginForm() {
     <div className="min-h-screen w-full grid lg:grid-cols-2 bg-white">
       {/* Left Image Column */}
       <div className="hidden lg:block w-full h-screen sticky top-0 overflow-hidden bg-[#0E2640]">
-        <Image
-          src="/images/background.png"
-          alt="IEUM Authentication"
-          fill
-          sizes="50vw"
-          className="object-cover opacity-90"
-          priority
-        />
+        {/* Image의 부모가 될 relative 감싸는 요소 추가 */}
+        <div className="relative w-full h-full">
+          <Image
+            src="/images/background.png"
+            alt="IEUM Authentication"
+            fill
+            sizes="50vw"
+            className="object-cover opacity-90"
+            priority
+          />
+        </div>
       </div>
 
       {/* Right Form Column */}

@@ -25,6 +25,36 @@ export interface Tutor {
   mbti: string | null;
   bio: string | null;
   profiles: TutorProfile | null;
+  profile_image: string | null;
+  background_image: string[] | null;
+  current_students: number | null;
+  max_students: number | null;
+}
+
+export interface ProfileTutorJoined {
+  id: string;
+  nickname: string | null;
+  furigana: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  birth_date: string | null;
+  tutors: {
+    school: string | null;
+    major: string | null;
+    style: string[] | string | null;
+    interests: string[] | string | null;
+    profile_image: string | null;
+    background_image: string[] | string | null;
+    bio: string | null;
+  } | null;
+}
+export interface TutorSearchParams {
+  university?: string;
+  interests?: string;
+  energy?: string;
+  communication?: string;
+  structure?: string;
+  goal?: string;
 }
 
 export interface CreateTutorInput {

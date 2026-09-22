@@ -34,7 +34,7 @@ interface StudentMemberResponse {
 
 interface TutorMemberResponse {
   id: string;
-  profile_image?: string; // 👈 튜터 테이블의 profile_image
+  profile_image?: string;
   profiles: ProfileResponse | ProfileResponse[] | null;
 }
 
@@ -46,11 +46,17 @@ interface MatchResponse {
   tutors: TutorMemberResponse | TutorMemberResponse[] | null;
 }
 
+interface MessageResponse {
+  content: string;
+  created_at: string;
+}
+
 interface ChatRoomResponse {
   id: string;
   match_id: string;
   created_at: string;
   matches: MatchResponse;
+  messages: MessageResponse | MessageResponse[] | null;
 }
 
 export function useChatRooms() {
@@ -97,7 +103,7 @@ export function useChatRooms() {
     };
   }, [supabase]);
 
-  // 2. 채팅방 목록 조회
+  // 2. 채팅방 목록 조회 및 최신 메시지 연동
   useEffect(() => {
     if (!currentUser) return;
     let isMounted = true;
@@ -117,6 +123,10 @@ export function useChatRooms() {
               tutor_id,
               students ( id, profiles ( nickname, profile_image ) ),
               tutors ( id, profile_image, profiles ( nickname ) ) 
+            ),
+            messages!room_id (  
+              content,
+              created_at
             )
           `,
           )
@@ -148,7 +158,6 @@ export function useChatRooms() {
           let partnerAvatar = "";
 
           if (isMeStudent) {
-            // 내가 학생일 때 -> 상대방은 튜터 (tutors 테이블 소속)
             const rawTutor = match.tutors;
             const tutorMember = Array.isArray(rawTutor)
               ? rawTutor[0]
@@ -160,10 +169,8 @@ export function useChatRooms() {
               : rawProfiles;
 
             partnerName = tutorProfile?.nickname ?? "튜터";
-            // 💡 튜터 테이블에 있는 profile_image 사용
             partnerAvatar = tutorMember?.profile_image ?? "";
           } else {
-            // 내가 튜터일 때 -> 상대방은 학생 (profiles 테이블 소속)
             const rawStudent = match.students;
             const studentMember = Array.isArray(rawStudent)
               ? rawStudent[0]
@@ -175,8 +182,40 @@ export function useChatRooms() {
               : rawProfiles;
 
             partnerName = studentProfile?.nickname ?? "학생";
-            // 💡 학생은 profiles 테이블에 있는 profile_image 사용
             partnerAvatar = studentProfile?.profile_image ?? "";
+          }
+
+          // 💡 가장 최근 메시지 추출 및 정렬 로직 적용
+          const rawMessages = room.messages;
+          const messageList = Array.isArray(rawMessages)
+            ? rawMessages
+            : rawMessages
+              ? [rawMessages]
+              : [];
+
+          const sortedMessages = messageList.sort(
+            (a, b) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime(),
+          );
+          const latestMessage = sortedMessages[0];
+
+          let displayMessage = "대화 내용이 없습니다.";
+          if (latestMessage?.content) {
+            if (latestMessage.content.startsWith("[파일]")) {
+              displayMessage = "사진 또는 파일을 전송했습니다.";
+            } else {
+              displayMessage = latestMessage.content;
+            }
+          }
+
+          let displayTime = "";
+          if (latestMessage?.created_at) {
+            const date = new Date(latestMessage.created_at);
+            displayTime = `${date.getHours().toString().padStart(2, "0")}:${date
+              .getMinutes()
+              .toString()
+              .padStart(2, "0")}`;
           }
 
           return {
@@ -184,8 +223,8 @@ export function useChatRooms() {
             match_id: room.match_id,
             name: partnerName,
             role: isMeStudent ? "Tutor" : "Student",
-            lastMessage: "대화 내용이 없습니다.",
-            time: "",
+            lastMessage: displayMessage,
+            time: displayTime,
             unread: false,
             avatar: partnerAvatar,
           };

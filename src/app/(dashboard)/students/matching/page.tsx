@@ -1,35 +1,36 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { MatchingContainer } from "./_components/MatchingContainer";
+import TutorFilterClient from "./_components/TutorFilterClient";
 
-export default async function StudentMatchingPage() {
+export default async function TutorFilterPage() {
   const supabase = await createClient();
 
+  // 1. 유저 인증 체크
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  if (authError || !user) {
+    redirect("/login");
+  }
 
-  const { data: match } = await supabase
+  // 2. 이미 매칭된 내역이 있는지 체크 (id 속성이 실제로 존재하는지 확인)
+  const { data: match, error: matchError } = await supabase
     .from("matches")
-    .select("*")
+    .select("id")
     .eq("student_id", user.id)
     .maybeSingle();
 
-  if (match) {
+  // 단순히 match가 아니라 match?.id가 확실히 있을 때만 리다이렉트
+  if (!matchError && match?.id) {
     redirect("/students");
   }
 
+  // 3. 매칭 내역이 없을 때만 필터 클라이언트 컴포넌트 렌더링
   return (
-    /* 
-      💡 pt-6 또는 pt-10 등을 추가하여 상단 패딩을 줄 수 있습니다. 
-      네비바 아래에서 살짝 여유를 두고 시작하고 싶을 때 유용합니다.
-    */
-    <div className="w-full h-[calc(100vh-5rem)] overflow-hidden flex flex-col items-center justify-start pt-8 px-4">
-      <div className="w-full max-w-4xl lg:max-w-5xl flex items-center justify-center">
-        <MatchingContainer />
-      </div>
-    </div>
+    <main className="w-full min-h-screen bg-[#d8e8f2]">
+      <TutorFilterClient />
+    </main>
   );
 }
