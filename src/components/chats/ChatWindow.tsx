@@ -4,6 +4,7 @@ import Image from "next/image";
 import { ChevronLeft, MoreVertical, Paperclip, Send } from "lucide-react";
 import { getSafeImageUrl } from "@/lib/utils";
 import MessageBubble from "./MessageBubble";
+import { createClient } from "@/lib/supabase/client"; // 💡 Supabase 클라이언트 임포트 추가
 
 interface ChatItem {
   id: string;
@@ -30,6 +31,7 @@ interface ChatWindowViewProps {
   onSendMessage: (e: React.FormEvent) => void;
   userRole?: "student" | "tutor" | string;
   onFileSelect?: (file: File) => void;
+  roomId?: string; // 💡 roomId props 추가
 }
 
 export default function ChatWindowView({
@@ -42,9 +44,34 @@ export default function ChatWindowView({
   onSendMessage,
   userRole,
   onFileSelect,
+  roomId, // 💡 roomId 받기
 }: ChatWindowViewProps) {
+  const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // 💡 채팅방에 진입했을 때 자동으로 내 last_read_at을 현재 시간으로 갱신
+  useEffect(() => {
+    const markRoomAsRead = async () => {
+      if (!roomId) return;
+
+      const isStudent = userRole === "student";
+      const columnName = isStudent
+        ? "student_last_read_at"
+        : "tutor_last_read_at";
+
+      try {
+        await supabase
+          .from("chat_rooms")
+          .update({ [columnName]: new Date().toISOString() })
+          .eq("id", roomId);
+      } catch (err) {
+        console.error("채팅방 읽음 처리 에러:", err);
+      }
+    };
+
+    void markRoomAsRead();
+  }, [roomId, userRole, supabase]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -72,7 +99,6 @@ export default function ChatWindowView({
   };
 
   return (
-    // 💡 최상위 컨테이너에 w-full h-full flex-1과 flex 구조를 명확히 부여
     <div className="flex-1 w-full h-full flex flex-col bg-white relative min-h-0 overflow-hidden">
       {/* Header */}
       <div className="px-3 py-3 flex items-center justify-between border-b border-slate-100 bg-white z-10 shrink-0 w-full">
@@ -112,7 +138,7 @@ export default function ChatWindowView({
         </button>
       </div>
 
-      {/* Messages (스크롤 컨테이너 - 가로 폭 100% 확보) */}
+      {/* Messages */}
       <div className="flex-1 w-full overflow-y-auto p-4 space-y-3 bg-white min-h-0">
         {messages.length === 0 ? (
           <div className="h-full flex items-center justify-center text-xs text-slate-400">

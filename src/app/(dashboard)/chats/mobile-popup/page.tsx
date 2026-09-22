@@ -72,6 +72,7 @@ export default function ChatPage() {
               onOpenInfo={() => setMobileView("info")}
               onSendMessage={handleSendMessageSubmit}
               userRole={currentUser?.role}
+              roomId={activeChat?.id || ""}
               onFileSelect={(file) => void sendFileMessage(file)} // 👈 2. 파일 선택 시 업로드 및 전송 연동 완료!
             />
           </div>

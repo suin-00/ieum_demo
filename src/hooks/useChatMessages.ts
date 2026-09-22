@@ -36,6 +36,10 @@ interface ChatRoomReadStatus {
     | null;
 }
 
+interface ChatRoomPayload {
+  id: string;
+}
+
 export function useChatMessages(
   activeChatId: string | null,
   currentUser: UserProfile | null,
@@ -80,7 +84,6 @@ export function useChatMessages(
       }
 
       const isMeStudent = matchData.student_id === currentUser.id;
-      // 내가 학생이면 튜터의 읽은 시간을, 내가 튜터이면 학생의 읽은 시간을 상대방의 읽은 시간으로 잡습니다.
       const partnerLastReadAt = isMeStudent
         ? roomInfo.tutor_last_read_at
         : roomInfo.student_last_read_at;
@@ -88,12 +91,10 @@ export function useChatMessages(
       return rawMessages.map((msg) => {
         const isSenderMe = msg.sender_id === currentUser.id;
 
-        // 상대방이 이 메시지 생성 이후에 채팅방을 읽었는지 검증
         let isReadByPartner = false;
         if (partnerLastReadAt) {
           const msgTime = new Date(msg.created_at).getTime();
           const readTime = new Date(partnerLastReadAt).getTime();
-          // 상대방의 마지막 읽은 시간이 메시지 생성 시간 이후이거나 같으면 읽은 것으로 판단
           isReadByPartner = readTime >= msgTime;
         }
 
@@ -155,7 +156,7 @@ export function useChatMessages(
     }
   }, [activeChatId, currentUser, supabase, formatMessages]);
 
-  // 2. 최초 진입 및 activeChatId 변경 시 조회 + 실시간 구독 설정
+  // 2. 최초 진입 및 activeChatId 변경 시 조회 + 실시간 구독 설정 (폴링 백업 포함)
   useEffect(() => {
     if (!activeChatId || !currentUser) {
       return;
@@ -171,9 +172,16 @@ export function useChatMessages(
 
     void loadData();
 
-    // Supabase Realtime 채널 구독 설정 (메시지 추가 및 읽음 시간 변경 감지)
+    // 💡 1초~2초 간격 폴링을 백업으로 두어 웹소켓 신호 유실 시에도 상대방 채팅이 즉시 뜨도록 보장
+    const pollInterval = setInterval(() => {
+      if (isMounted) {
+        void fetchMessagesAndRoom();
+      }
+    }, 2000);
+
+    // Supabase Realtime 채널 구독 설정 (고유 채널명 사용)
     const channel = supabase
-      .channel(`room_${activeChatId}`)
+      .channel(`chat_messages_${activeChatId}_${Date.now()}`)
       .on(
         "postgres_changes",
         {
@@ -182,7 +190,8 @@ export function useChatMessages(
           table: "messages",
           filter: `room_id=eq.${activeChatId}`,
         },
-        () => {
+        (payload) => {
+          console.log("🔥 [Realtime] 새 메시지 감지됨:", payload);
           void fetchMessagesAndRoom();
         },
       )
@@ -192,16 +201,22 @@ export function useChatMessages(
           event: "UPDATE",
           schema: "public",
           table: "chat_rooms",
-          filter: `id=eq.${activeChatId}`,
         },
-        () => {
-          void fetchMessagesAndRoom();
+        (payload) => {
+          const updatedRoom = payload.new as ChatRoomPayload | null;
+          if (updatedRoom && updatedRoom.id === activeChatId) {
+            console.log("🔥 [Realtime] 읽음 상태 변경 감지됨:", payload);
+            void fetchMessagesAndRoom();
+          }
         },
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        console.log(`🔌 [Realtime 채널 상태]: ${status}`, err || "");
+      });
 
     return () => {
       isMounted = false;
+      clearInterval(pollInterval);
       void supabase.removeChannel(channel);
     };
   }, [activeChatId, currentUser, supabase, fetchMessagesAndRoom]);
@@ -221,7 +236,7 @@ export function useChatMessages(
         hour: "2-digit",
         minute: "2-digit",
       }),
-      read: false, // 내가 막 보낸 메시지는 아직 상대가 안 읽었으므로 확실하게 false 처리
+      read: false,
     };
 
     setMessages((prev) => [...prev, optimisticMessage]);
