@@ -46,7 +46,6 @@ export function useChatMessages(
 
   // 1. 메시지 조회 및 실시간 구독 설정
   useEffect(() => {
-    // 💡 setState를 부르지 않고 그냥 안전하게 return!
     if (!activeChatId || !currentUser) {
       return;
     }
@@ -89,7 +88,15 @@ export function useChatMessages(
         },
         (payload) => {
           const newMsg = payload.new as MessageResponse;
-          setMessages((prev) => [...prev, formatMessages([newMsg])[0]]);
+          const formatted = formatMessages([newMsg])[0];
+
+          // 💡 중복 추가 방지 (낙관적 업데이트로 먼저 추가된 아이디가 있다면 무시)
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === formatted.id)) {
+              return prev;
+            }
+            return [...prev, formatted];
+          });
         },
       )
       .subscribe();
@@ -100,21 +107,49 @@ export function useChatMessages(
     };
   }, [activeChatId, currentUser, supabase, formatMessages]);
 
-  // 2. 메시지 전송 함수
+  // 2. 메시지 전송 함수 (낙관적 업데이트 적용)
   const sendMessage = async (content: string) => {
     if (!activeChatId || !currentUser || !content.trim()) return;
 
+    const trimmedContent = content.trim();
+    const tempId = `temp_${Date.now()}`; // 임시 ID 생성
+
+    // 💡 [핵심] 전송 버튼을 누르는 순간 내 화면에 즉시 반영 (새로고침 불필요)
+    const optimisticMessage: MessageItem = {
+      id: tempId,
+      sender: "user",
+      text: trimmedContent,
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      read: true,
+    };
+
+    setMessages((prev) => [...prev, optimisticMessage]);
+
     try {
-      const { error } = await supabase.from("messages").insert([
-        {
-          room_id: activeChatId,
-          sender_id: currentUser.id,
-          content: content.trim(),
-        },
-      ]);
+      const { data, error } = await supabase
+        .from("messages")
+        .insert([
+          {
+            room_id: activeChatId,
+            sender_id: currentUser.id,
+            content: trimmedContent,
+          },
+        ])
+        .select()
+        .single();
 
       if (error) {
         console.error("메시지 전송 실패:", error);
+        // 실패 시 임시 메시지 제거 등 예외 처리 가능
+      } else if (data) {
+        // DB에 정상 저장된 진짜 데이터의 ID로 임시 ID 교체
+        const realMsg = formatMessages([data as MessageResponse])[0];
+        setMessages((prev) =>
+          prev.map((msg) => (msg.id === tempId ? realMsg : msg)),
+        );
       }
     } catch (err) {
       console.error("메시지 전송 중 에러:", err);
