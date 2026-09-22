@@ -110,7 +110,7 @@ export function useChatRooms() {
               student_id,
               tutor_id,
               students ( id, profiles ( nickname, profile_image ) ),
-              tutors ( id, profiles ( nickname, profile_image ) )
+              tutors ( id, image_url, profiles ( nickname ) ) 
             )
           `,
           )
