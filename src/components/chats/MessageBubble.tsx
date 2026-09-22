@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 interface MessageBubbleProps {
   sender: "user" | "tutor";
@@ -50,7 +51,7 @@ export default function MessageBubble({
                 rel="noopener noreferrer"
                 className="block overflow-hidden rounded-lg"
               >
-                <img
+                <Image
                   src={fileUrl}
                   alt={fileName}
                   className="max-w-full h-auto max-h-48 object-cover rounded-lg hover:opacity-95 transition"
@@ -72,7 +73,7 @@ export default function MessageBubble({
           </div>
         ) : (
           // 일반 텍스트 메시지
-          <p className="whitespace-pre-wrap break-words">{text}</p>
+          <p className="whitespace-pre-wrap wrap-break-word">{text}</p>
         )}
       </div>
       <span className="text-[9px] text-slate-400 mt-1 px-1">{time}</span>
