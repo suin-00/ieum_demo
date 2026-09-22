@@ -89,11 +89,15 @@ export function useChatMessages(
 
         let isReadByPartner = false;
         if (partnerLastReadAt) {
+          // 💡 양쪽 모두 getTime() 밀리초 숫자로 정확히 변환하여 비교
           const msgTime = new Date(msg.created_at).getTime();
           const readTime = new Date(partnerLastReadAt).getTime();
+
+          // 상대방이 읽은 시각이 메시지 생성 시각과 같거나 그 이후라면 읽음 처리
           isReadByPartner = readTime >= msgTime;
         }
 
+        // 내가 보낸 메시지일 때만 상대방의 읽음 여부를 반영하고, 상대가 보낸 건 내 화면에서 항상 true
         const calculatedRead = isSenderMe ? isReadByPartner : true;
 
         return {
@@ -145,6 +149,13 @@ export function useChatMessages(
 
       const rawMessages = (msgResult.data || []) as MessageResponse[];
       const roomInfo = (roomResult.data || null) as ChatRoomReadStatus | null;
+
+      // 💡 이 로그를 찍어보세요!
+      console.log("📊 [현재 가져온 룸 읽음 정보]:", {
+        studentRead: roomInfo?.student_last_read_at,
+        tutorRead: roomInfo?.tutor_last_read_at,
+        matchData: roomInfo?.matches,
+      });
 
       setMessages(formatMessages(rawMessages, roomInfo));
     } catch (err) {
