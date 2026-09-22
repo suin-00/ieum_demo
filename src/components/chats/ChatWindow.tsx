@@ -4,7 +4,7 @@ import Image from "next/image";
 import { ChevronLeft, MoreVertical, Paperclip, Send } from "lucide-react";
 import { getSafeImageUrl } from "@/lib/utils";
 import MessageBubble from "./MessageBubble";
-import { createClient } from "@/lib/supabase/client"; // 💡 Supabase 클라이언트 임포트 추가
+import { createClient } from "@/lib/supabase/client";
 
 interface ChatItem {
   id: string;
@@ -31,7 +31,7 @@ interface ChatWindowViewProps {
   onSendMessage: (e: React.FormEvent) => void;
   userRole?: "student" | "tutor" | string;
   onFileSelect?: (file: File) => void;
-  roomId?: string; // 💡 roomId props 추가
+  roomId?: string;
 }
 
 export default function ChatWindowView({
@@ -44,13 +44,16 @@ export default function ChatWindowView({
   onSendMessage,
   userRole,
   onFileSelect,
-  roomId, // 💡 roomId 받기
+  roomId,
 }: ChatWindowViewProps) {
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // 💡 채팅방에 진입했을 때 자동으로 내 last_read_at을 현재 시간으로 갱신
+  // 💡 1. 스크롤 컨테이너를 추적하기 위한 ref 추가
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // 채팅방에 진입했을 때 자동으로 내 last_read_at을 현재 시간으로 갱신
   useEffect(() => {
     const markRoomAsRead = async () => {
       if (!roomId) return;
@@ -73,8 +76,20 @@ export default function ChatWindowView({
     void markRoomAsRead();
   }, [roomId, userRole, supabase]);
 
+  // 💡 2. 스마트 스크롤 적용 (사용자가 위를 보고 있을 때는 스크롤 고정 유지)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // 현재 스크롤 위치가 맨 아래에서 150px 이내인지 확인
+    const isNearBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight <
+      150;
+
+    // 맨 아래에 가까이 있을 때만 자동으로 아래로 스크롤 (읽음 상태 갱신 등으로 리렌더링되어도 위쪽 보고 있으면 안 내려감!)
+    if (isNearBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
   const isTutor = userRole === "tutor";
@@ -139,7 +154,10 @@ export default function ChatWindowView({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 w-full overflow-y-auto p-4 space-y-3 bg-white min-h-0">
+      <div
+        ref={scrollContainerRef} // 💡 3. 스크롤 컨테이너에 ref 연결
+        className="flex-1 w-full overflow-y-auto p-4 space-y-3 bg-white min-h-0"
+      >
         {messages.length === 0 ? (
           <div className="h-full flex items-center justify-center text-xs text-slate-400">
             {emptyMessageText}

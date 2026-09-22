@@ -36,10 +36,6 @@ interface ChatRoomReadStatus {
     | null;
 }
 
-interface ChatRoomPayload {
-  id: string;
-}
-
 export function useChatMessages(
   activeChatId: string | null,
   currentUser: UserProfile | null,
@@ -156,7 +152,7 @@ export function useChatMessages(
     }
   }, [activeChatId, currentUser, supabase, formatMessages]);
 
-  // 2. 최초 진입 및 activeChatId 변경 시 조회 + 실시간 구독 설정 (폴링 백업 포함)
+  // 2. 진입 시 조회 + 실시간 구독 + 2초 간격 자동 새로고침(폴링) 결합
   useEffect(() => {
     if (!activeChatId || !currentUser) {
       return;
@@ -172,16 +168,22 @@ export function useChatMessages(
 
     void loadData();
 
-    // 💡 1초~2초 간격 폴링을 백업으로 두어 웹소켓 신호 유실 시에도 상대방 채팅이 즉시 뜨도록 보장
+    // 💡 2초 간격 자동 새로고침으로 '1'이 방에 켜둔 상태에서도 자동으로 사라지도록 보장
     const pollInterval = setInterval(() => {
       if (isMounted) {
         void fetchMessagesAndRoom();
       }
     }, 2000);
 
-    // Supabase Realtime 채널 구독 설정 (고유 채널명 사용)
+    // 브라우저 탭 포커스 시 자동 동기화
+    const handleFocus = () => {
+      void fetchMessagesAndRoom();
+    };
+    window.addEventListener("focus", handleFocus);
+
+    // Supabase Realtime 채널 구독 (새 메시지 즉시 수신)
     const channel = supabase
-      .channel(`chat_messages_${activeChatId}_${Date.now()}`)
+      .channel(`public:room_${activeChatId}`)
       .on(
         "postgres_changes",
         {
@@ -190,38 +192,21 @@ export function useChatMessages(
           table: "messages",
           filter: `room_id=eq.${activeChatId}`,
         },
-        (payload) => {
-          console.log("🔥 [Realtime] 새 메시지 감지됨:", payload);
+        () => {
           void fetchMessagesAndRoom();
         },
       )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "chat_rooms",
-        },
-        (payload) => {
-          const updatedRoom = payload.new as ChatRoomPayload | null;
-          if (updatedRoom && updatedRoom.id === activeChatId) {
-            console.log("🔥 [Realtime] 읽음 상태 변경 감지됨:", payload);
-            void fetchMessagesAndRoom();
-          }
-        },
-      )
-      .subscribe((status, err) => {
-        console.log(`🔌 [Realtime 채널 상태]: ${status}`, err || "");
-      });
+      .subscribe();
 
     return () => {
       isMounted = false;
       clearInterval(pollInterval);
+      window.removeEventListener("focus", handleFocus);
       void supabase.removeChannel(channel);
     };
   }, [activeChatId, currentUser, supabase, fetchMessagesAndRoom]);
 
-  // 3. 메시지 전송 함수 (낙관적 업데이트 적용)
+  // 3. 메시지 전송 함수 (낙관적 업데이트)
   const sendMessage = async (content: string) => {
     if (!activeChatId || !currentUser || !content.trim()) return;
 
