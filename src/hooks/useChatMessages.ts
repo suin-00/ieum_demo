@@ -156,8 +156,43 @@ export function useChatMessages(
     }
   };
 
+  // 3. 💡 파일 업로드 및 전송 함수 추가
+  const sendFileMessage = async (file: File) => {
+    if (!activeChatId || !currentUser) return;
+
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+      const filePath = `${activeChatId}/${fileName}`;
+
+      // 1. Supabase Storage에 업로드 ("chat-files" 버킷 사용)
+      const { error: uploadError } = await supabase.storage
+        .from("chat-files")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error("파일 업로드 실패:", uploadError.message);
+        alert("파일 업로드에 실패했습니다.");
+        return;
+      }
+
+      // 2. 업로드된 파일의 Public URL 가져오기
+      const { data: publicUrlData } = supabase.storage
+        .from("chat-files")
+        .getPublicUrl(filePath);
+
+      const fileUrl = publicUrlData.publicUrl;
+
+      // 3. 메시지 형태로 전송 (기존 sendMessage 재사용)
+      await sendMessage(`[파일] ${file.name}:::${fileUrl}`);
+    } catch (err) {
+      console.error("파일 전송 중 에러:", err);
+    }
+  };
+
   return {
     messages,
     sendMessage,
+    sendFileMessage, // 👈 💡 이제 외부에서 정상적으로 불러올 수 있습니다!
   };
 }

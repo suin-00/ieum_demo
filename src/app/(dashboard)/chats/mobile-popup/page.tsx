@@ -14,6 +14,7 @@ export default function ChatPage() {
     activeChatId,
     setActiveChatId,
     sendMessage,
+    sendFileMessage, // 👈 1. 훅에서 파일 전송 함수 가져오기
   } = useChat();
 
   const [unreadOnly, setUnreadOnly] = useState(false);
@@ -71,6 +72,7 @@ export default function ChatPage() {
               onOpenInfo={() => setMobileView("info")}
               onSendMessage={handleSendMessageSubmit}
               userRole={currentUser?.role}
+              onFileSelect={(file) => void sendFileMessage(file)} // 👈 2. 파일 선택 시 업로드 및 전송 연동 완료!
             />
           </div>
 

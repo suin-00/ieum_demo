@@ -1,8 +1,8 @@
 // src/components/chats/ChatWindow.tsx
-import React from "react";
+import React, { useRef } from "react";
 import Image from "next/image";
 import { ChevronLeft, MoreVertical, Paperclip, Send } from "lucide-react";
-import { getSafeImageUrl } from "@/lib/utils"; // 👈 유틸 함수가 있는 경로에 맞게 확인
+import { getSafeImageUrl } from "@/lib/utils";
 import MessageBubble from "./MessageBubble";
 
 interface ChatItem {
@@ -28,7 +28,8 @@ interface ChatWindowViewProps {
   onBack: () => void;
   onOpenInfo: () => void;
   onSendMessage: (e: React.FormEvent) => void;
-  userRole?: "student" | "tutor" | string; // 💡 로그인한 유저의 역할 추가
+  userRole?: "student" | "tutor" | string;
+  onFileSelect?: (file: File) => void; // 💡 파일 선택 시 호출될 함수 prop 추가
 }
 
 export default function ChatWindowView({
@@ -40,8 +41,11 @@ export default function ChatWindowView({
   onOpenInfo,
   onSendMessage,
   userRole,
+  onFileSelect,
 }: ChatWindowViewProps) {
-  // 💡 유저 역할에 따른 텍스트 분기 (튜터: 한국어 / 튜티: 일본어)
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 유저 역할에 따른 텍스트 분기 (튜터: 한국어 / 튜티: 일본어)
   const isTutor = userRole === "tutor";
   const placeholderText = isTutor
     ? "메시지를 입력하세요..."
@@ -51,6 +55,20 @@ export default function ChatWindowView({
     ? "메시지 내역이 없습니다."
     : "メッセージ履歴はありません";
 
+  // 클립 버튼 클릭 시 숨겨진 파일 input 클릭 트리거
+  const handleClipClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  // 파일이 선택되었을 때 실행
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onFileSelect) {
+      onFileSelect(file);
+      e.target.value = ""; // 같은 파일 다시 선택 가능하도록 초기화
+    }
+  };
+
   return (
     <div className="w-full h-full flex flex-col bg-white relative min-h-0 overflow-x-hidden">
       {/* Header */}
@@ -58,7 +76,7 @@ export default function ChatWindowView({
         <div className="flex items-center gap-2">
           <button
             onClick={onBack}
-            className="p-1 -ml-1 text-slate-500 hover:bg-slate-50 rounded-lg"
+            className="p-1 -ml-1 text-slate-500 hover:bg-slate-50 rounded-lg cursor-pointer"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -85,7 +103,7 @@ export default function ChatWindowView({
         </div>
         <button
           onClick={onOpenInfo}
-          className="p-1.5 text-slate-400 hover:text-[#0E2640]"
+          className="p-1.5 text-slate-400 hover:text-[#0E2640] cursor-pointer"
         >
           <MoreVertical className="w-4 h-4" />
         </button>
@@ -111,13 +129,23 @@ export default function ChatWindowView({
 
       {/* Input */}
       <div className="p-2.5 bg-white border-t border-slate-100 shrink-0">
+        {/* 숨겨진 파일 input 요소 */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+          accept="image/*,.pdf,.doc,.docx,.txt"
+        />
+
         <form
           onSubmit={onSendMessage}
           className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-xl border border-slate-200"
         >
           <button
             type="button"
-            className="p-1 text-slate-400 hover:text-[#0E2640]"
+            onClick={handleClipClick} // 👈 클릭 시 파일 창 오픈
+            className="p-1 text-slate-400 hover:text-[#0E2640] cursor-pointer"
           >
             <Paperclip className="w-4 h-4" />
           </button>
@@ -125,13 +153,13 @@ export default function ChatWindowView({
             type="text"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
-            placeholder={placeholderText} // 💡 동적 플레이스홀더 적용
+            placeholder={placeholderText}
             className="flex-1 bg-transparent border-none text-xs text-[#0E2640] placeholder-slate-400 outline-none px-1"
           />
           <button
             type="submit"
             disabled={!inputMessage.trim()}
-            className={`p-1.5 rounded-lg text-white ${
+            className={`p-1.5 rounded-lg text-white cursor-pointer ${
               inputMessage.trim()
                 ? "bg-[#0E2640]"
                 : "bg-slate-200 cursor-not-allowed"
