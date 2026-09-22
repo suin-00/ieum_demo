@@ -1,5 +1,5 @@
 // src/components/chats/ChatRoom.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Phone,
   Video,
@@ -8,8 +8,8 @@ import {
   Send,
   Check,
 } from "lucide-react";
-import MessageBubble from "./MessageBubble";
 import Image from "next/image";
+import { createClient } from "@/lib/supabase/client";
 
 interface ChatItem {
   id: string;
@@ -28,6 +28,7 @@ interface MessageItem {
   time: string;
   read: boolean;
   images?: string[];
+  createdAt?: string;
 }
 
 interface ChatRoomProps {
@@ -37,6 +38,8 @@ interface ChatRoomProps {
   setInputMessage: (value: string) => void;
   onSendMessage: (e: React.FormEvent) => void;
   unifiedImageUrl: string;
+  roomId: string;
+  userRole?: "student" | "tutor" | string;
 }
 
 export default function ChatRoom({
@@ -46,7 +49,33 @@ export default function ChatRoom({
   setInputMessage,
   onSendMessage,
   unifiedImageUrl,
+  roomId,
+  userRole,
 }: ChatRoomProps) {
+  const supabase = createClient();
+
+  useEffect(() => {
+    const markRoomAsRead = async () => {
+      if (!roomId) return;
+
+      const isStudent = userRole === "student";
+      const columnName = isStudent
+        ? "student_last_read_at"
+        : "tutor_last_read_at";
+
+      try {
+        await supabase
+          .from("chat_rooms")
+          .update({ [columnName]: new Date().toISOString() })
+          .eq("id", roomId);
+      } catch (err) {
+        console.error("채팅방 읽음 처리 에러:", err);
+      }
+    };
+
+    void markRoomAsRead();
+  }, [roomId, userRole, supabase]);
+
   return (
     <div className="w-full h-full flex flex-col bg-white relative min-h-0">
       {/* Header */}
@@ -56,6 +85,8 @@ export default function ChatRoom({
             <Image
               src={unifiedImageUrl}
               alt={activeChat.name}
+              width={44}
+              height={44}
               className="w-11 h-11 rounded-full object-cover border border-slate-100"
               referrerPolicy="no-referrer"
             />
@@ -71,19 +102,19 @@ export default function ChatRoom({
         </div>
         <div className="flex items-center gap-3 text-slate-400">
           <button
-            className="p-1.5 hover:text-[#0E2640] hover:bg-slate-50 rounded-lg transition-colors"
+            className="p-1.5 hover:text-[#0E2640] hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
             title="音声通話"
           >
             <Phone className="w-5 h-5" />
           </button>
           <button
-            className="p-1.5 hover:text-[#0E2640] hover:bg-slate-50 rounded-lg transition-colors"
+            className="p-1.5 hover:text-[#0E2640] hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
             title="ビデオ通話"
           >
             <Video className="w-5 h-5" />
           </button>
           <button
-            className="p-1.5 hover:text-[#0E2640] hover:bg-slate-50 rounded-lg transition-colors"
+            className="p-1.5 hover:text-[#0E2640] hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
             title="メニュー"
           >
             <MoreVertical className="w-5 h-5" />
@@ -104,38 +135,70 @@ export default function ChatRoom({
           return (
             <div
               key={msg.id}
-              className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
+              className={`flex flex-col w-full ${
+                isUser ? "items-end" : "items-start"
+              }`}
             >
+              {/* 말풍선 영역 */}
               <div
-                className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                  isUser
-                    ? "bg-[#485B76] text-white rounded-br-none shadow-xs"
-                    : "bg-slate-100 text-[#0E2640] rounded-bl-none"
+                className={`flex items-end max-w-[75%] ${
+                  isUser ? "flex-row-reverse" : "flex-row"
                 }`}
               >
-                <p className="whitespace-pre-wrap">{msg.text}</p>
-                {msg.images && (
-                  <div className="flex gap-2 mt-2.5">
-                    {msg.images.map((img, i) => (
-                      <Image
-                        key={i}
-                        src={img}
-                        alt="添付ファイル"
-                        className="w-24 h-20 object-cover rounded-lg border border-black/5 hover:opacity-90 transition-opacity cursor-pointer"
-                        referrerPolicy="no-referrer"
-                      />
-                    ))}
-                  </div>
-                )}
+                <div
+                  className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                    isUser
+                      ? "bg-[#485B76] text-white rounded-br-none shadow-xs"
+                      : "bg-slate-100 text-[#0E2640] rounded-bl-none"
+                  }`}
+                  style={{
+                    display: "inline-block",
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
+                  }}
+                >
+                  <p className="whitespace-pre-wrap m-0">{msg.text}</p>
+                  {msg.images && (
+                    <div className="flex gap-2 mt-2.5">
+                      {msg.images.map((img, i) => (
+                        <Image
+                          key={i}
+                          src={img}
+                          alt="添付ファイル"
+                          width={96}
+                          height={80}
+                          className="w-24 h-20 object-cover rounded-lg border border-black/5 hover:opacity-90 transition-opacity cursor-pointer"
+                          referrerPolicy="no-referrer"
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 mt-1.5 px-1">
+
+              {/* 💡 하단 정보 영역: [시간] [체크아이콘] [주황색 '1'] 순서로 배치 (isUser일 때 역순 정렬) */}
+              <div
+                className={`flex items-center gap-1.5 mt-1.5 px-1 ${
+                  isUser ? "flex-row-reverse" : "flex-row"
+                }`}
+              >
                 <span className="text-[11px] text-slate-400 font-medium">
                   {msg.time}
                 </span>
+
                 {isUser && (
-                  <Check
-                    className={`w-3.5 h-3.5 stroke-[2.5] ${msg.read ? "text-[#F0DDBD]" : "text-[#0E2640]"}`}
-                  />
+                  <>
+                    <Check
+                      className={`w-3.5 h-3.5 stroke-[2.5] ${
+                        msg.read ? "text-[#F0DDBD]" : "text-[#0E2640]"
+                      }`}
+                    />
+                    {!msg.read && (
+                      <span className="text-[10px] font-bold text-amber-500 select-none shrink-0">
+                        1
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -161,7 +224,7 @@ export default function ChatRoom({
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder="メッセージを入力..."
-            className="flex-1 bg-transparent border-none text-sm text-[#0E2640] placeholder-slate-400 focus:ring-0 outline-none px-2"
+            className="flex-1 bg-transparent border-none text-sm text-[#0E2640] placeholder-slate-400 focus:ring-0 outline-none px-2 min-w-0"
           />
           <button
             type="submit"

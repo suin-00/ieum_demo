@@ -1,3 +1,4 @@
+// src/hooks/useChatMessages.ts
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -20,6 +21,21 @@ interface MessageResponse {
   created_at: string;
 }
 
+interface ChatRoomReadStatus {
+  student_last_read_at: string | null;
+  tutor_last_read_at: string | null;
+  matches:
+    | {
+        student_id: string;
+        tutor_id: string;
+      }
+    | {
+        student_id: string;
+        tutor_id: string;
+      }[]
+    | null;
+}
+
 export function useChatMessages(
   activeChatId: string | null,
   currentUser: UserProfile | null,
@@ -27,24 +43,119 @@ export function useChatMessages(
   const supabase = createClient();
   const [messages, setMessages] = useState<MessageItem[]>([]);
 
-  // 메시지 포맷팅 헬퍼 함수
+  // 메시지 포맷팅 및 읽음 상태 계산 헬퍼 함수
   const formatMessages = useCallback(
-    (rawMessages: MessageResponse[]): MessageItem[] => {
-      return rawMessages.map((msg) => ({
-        id: msg.id,
-        sender: msg.sender_id === currentUser?.id ? "user" : "tutor",
-        text: msg.content,
-        time: new Date(msg.created_at).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        read: true,
-      }));
+    (
+      rawMessages: MessageResponse[],
+      roomInfo: ChatRoomReadStatus | null,
+    ): MessageItem[] => {
+      if (!currentUser || !roomInfo || !roomInfo.matches) {
+        return rawMessages.map((msg) => ({
+          id: msg.id,
+          sender: msg.sender_id === currentUser?.id ? "user" : "tutor",
+          text: msg.content,
+          time: new Date(msg.created_at).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          read: true,
+        }));
+      }
+
+      const matchData = Array.isArray(roomInfo.matches)
+        ? roomInfo.matches[0]
+        : roomInfo.matches;
+
+      if (!matchData) {
+        return rawMessages.map((msg) => ({
+          id: msg.id,
+          sender: msg.sender_id === currentUser?.id ? "user" : "tutor",
+          text: msg.content,
+          time: new Date(msg.created_at).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          read: true,
+        }));
+      }
+
+      const isMeStudent = matchData.student_id === currentUser.id;
+      // 내가 학생이면 튜터의 읽은 시간을, 내가 튜터이면 학생의 읽은 시간을 상대방의 읽은 시간으로 잡습니다.
+      const partnerLastReadAt = isMeStudent
+        ? roomInfo.tutor_last_read_at
+        : roomInfo.student_last_read_at;
+
+      return rawMessages.map((msg) => {
+        const isSenderMe = msg.sender_id === currentUser.id;
+
+        // 상대방이 이 메시지 생성 이후에 채팅방을 읽었는지 검증
+        let isReadByPartner = false;
+        if (partnerLastReadAt) {
+          const msgTime = new Date(msg.created_at).getTime();
+          const readTime = new Date(partnerLastReadAt).getTime();
+          // 상대방의 마지막 읽은 시간이 메시지 생성 시간 이후이거나 같으면 읽은 것으로 판단
+          isReadByPartner = readTime >= msgTime;
+        }
+
+        const calculatedRead = isSenderMe ? isReadByPartner : true;
+
+        return {
+          id: msg.id,
+          sender: isSenderMe ? "user" : "tutor",
+          text: msg.content,
+          time: new Date(msg.created_at).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          read: calculatedRead,
+        };
+      });
     },
     [currentUser],
   );
 
-  // 1. 메시지 조회 및 실시간 구독 설정
+  // 1. 메시지 및 채팅방 읽음 정보 조회 함수
+  const fetchMessagesAndRoom = useCallback(async () => {
+    if (!activeChatId || !currentUser) return;
+
+    try {
+      const [msgResult, roomResult] = await Promise.all([
+        supabase
+          .from("messages")
+          .select("*")
+          .eq("room_id", activeChatId)
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("chat_rooms")
+          .select(
+            `
+            student_last_read_at,
+            tutor_last_read_at,
+            matches (
+              student_id,
+              tutor_id
+            )
+          `,
+          )
+          .eq("id", activeChatId)
+          .single(),
+      ]);
+
+      if (msgResult.error) {
+        console.error("메시지 조회 실패:", msgResult.error.message);
+        return;
+      }
+
+      const rawMessages = (msgResult.data || []) as MessageResponse[];
+      const roomInfo = (roomResult.data || null) as ChatRoomReadStatus | null;
+
+      setMessages(formatMessages(rawMessages, roomInfo));
+    } catch (err) {
+      console.error("메시지 조회 중 에러:", err);
+    }
+  }, [activeChatId, currentUser, supabase, formatMessages]);
+
+  // 2. 최초 진입 및 activeChatId 변경 시 조회 + 실시간 구독 설정
   useEffect(() => {
     if (!activeChatId || !currentUser) {
       return;
@@ -52,30 +163,15 @@ export function useChatMessages(
 
     let isMounted = true;
 
-    const loadMessages = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("messages")
-          .select("*")
-          .eq("room_id", activeChatId)
-          .order("created_at", { ascending: true });
-
-        if (error || !data || !isMounted) {
-          console.error("메시지 조회 실패:", error?.message);
-          return;
-        }
-
-        if (isMounted) {
-          setMessages(formatMessages(data as unknown as MessageResponse[]));
-        }
-      } catch (err) {
-        console.error("메시지 조회 중 에러:", err);
+    const loadData = async () => {
+      if (isMounted) {
+        await fetchMessagesAndRoom();
       }
     };
 
-    void loadMessages();
+    void loadData();
 
-    // 💡 Supabase Realtime 채널 구독 설정
+    // Supabase Realtime 채널 구독 설정 (메시지 추가 및 읽음 시간 변경 감지)
     const channel = supabase
       .channel(`room_${activeChatId}`)
       .on(
@@ -86,17 +182,20 @@ export function useChatMessages(
           table: "messages",
           filter: `room_id=eq.${activeChatId}`,
         },
-        (payload) => {
-          const newMsg = payload.new as MessageResponse;
-          const formatted = formatMessages([newMsg])[0];
-
-          // 💡 중복 추가 방지 (낙관적 업데이트로 먼저 추가된 아이디가 있다면 무시)
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === formatted.id)) {
-              return prev;
-            }
-            return [...prev, formatted];
-          });
+        () => {
+          void fetchMessagesAndRoom();
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "chat_rooms",
+          filter: `id=eq.${activeChatId}`,
+        },
+        () => {
+          void fetchMessagesAndRoom();
         },
       )
       .subscribe();
@@ -105,16 +204,15 @@ export function useChatMessages(
       isMounted = false;
       void supabase.removeChannel(channel);
     };
-  }, [activeChatId, currentUser, supabase, formatMessages]);
+  }, [activeChatId, currentUser, supabase, fetchMessagesAndRoom]);
 
-  // 2. 메시지 전송 함수 (낙관적 업데이트 적용)
+  // 3. 메시지 전송 함수 (낙관적 업데이트 적용)
   const sendMessage = async (content: string) => {
     if (!activeChatId || !currentUser || !content.trim()) return;
 
     const trimmedContent = content.trim();
-    const tempId = `temp_${Date.now()}`; // 임시 ID 생성
+    const tempId = `temp_${Date.now()}`;
 
-    // 💡 [핵심] 전송 버튼을 누르는 순간 내 화면에 즉시 반영 (새로고침 불필요)
     const optimisticMessage: MessageItem = {
       id: tempId,
       sender: "user",
@@ -123,7 +221,7 @@ export function useChatMessages(
         hour: "2-digit",
         minute: "2-digit",
       }),
-      read: true,
+      read: false, // 내가 막 보낸 메시지는 아직 상대가 안 읽었으므로 확실하게 false 처리
     };
 
     setMessages((prev) => [...prev, optimisticMessage]);
@@ -143,20 +241,15 @@ export function useChatMessages(
 
       if (error) {
         console.error("메시지 전송 실패:", error);
-        // 실패 시 임시 메시지 제거 등 예외 처리 가능
       } else if (data) {
-        // DB에 정상 저장된 진짜 데이터의 ID로 임시 ID 교체
-        const realMsg = formatMessages([data as MessageResponse])[0];
-        setMessages((prev) =>
-          prev.map((msg) => (msg.id === tempId ? realMsg : msg)),
-        );
+        void fetchMessagesAndRoom();
       }
     } catch (err) {
       console.error("메시지 전송 중 에러:", err);
     }
   };
 
-  // 3. 💡 파일 업로드 및 전송 함수 추가
+  // 4. 파일 업로드 및 전송 함수
   const sendFileMessage = async (file: File) => {
     if (!activeChatId || !currentUser) return;
 
@@ -165,7 +258,6 @@ export function useChatMessages(
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
       const filePath = `${activeChatId}/${fileName}`;
 
-      // 1. Supabase Storage에 업로드 ("chat-files" 버킷 사용)
       const { error: uploadError } = await supabase.storage
         .from("chat-files")
         .upload(filePath, file);
@@ -176,14 +268,12 @@ export function useChatMessages(
         return;
       }
 
-      // 2. 업로드된 파일의 Public URL 가져오기
       const { data: publicUrlData } = supabase.storage
         .from("chat-files")
         .getPublicUrl(filePath);
 
       const fileUrl = publicUrlData.publicUrl;
 
-      // 3. 메시지 형태로 전송 (기존 sendMessage 재사용)
       await sendMessage(`[파일] ${file.name}:::${fileUrl}`);
     } catch (err) {
       console.error("파일 전송 중 에러:", err);
@@ -193,6 +283,6 @@ export function useChatMessages(
   return {
     messages,
     sendMessage,
-    sendFileMessage, // 👈 💡 이제 외부에서 정상적으로 불러올 수 있습니다!
+    sendFileMessage,
   };
 }

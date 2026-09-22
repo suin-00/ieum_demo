@@ -1,5 +1,5 @@
-// src/components/chats/ChatWindow.tsx
-import React, { useRef } from "react";
+// src/components/chats/ChatWindowView.tsx
+import React, { useRef, useEffect } from "react";
 import Image from "next/image";
 import { ChevronLeft, MoreVertical, Paperclip, Send } from "lucide-react";
 import { getSafeImageUrl } from "@/lib/utils";
@@ -29,7 +29,7 @@ interface ChatWindowViewProps {
   onOpenInfo: () => void;
   onSendMessage: (e: React.FormEvent) => void;
   userRole?: "student" | "tutor" | string;
-  onFileSelect?: (file: File) => void; // 💡 파일 선택 시 호출될 함수 prop 추가
+  onFileSelect?: (file: File) => void;
 }
 
 export default function ChatWindowView({
@@ -44,8 +44,12 @@ export default function ChatWindowView({
   onFileSelect,
 }: ChatWindowViewProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // 유저 역할에 따른 텍스트 분기 (튜터: 한국어 / 튜티: 일본어)
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   const isTutor = userRole === "tutor";
   const placeholderText = isTutor
     ? "메시지를 입력하세요..."
@@ -55,24 +59,23 @@ export default function ChatWindowView({
     ? "메시지 내역이 없습니다."
     : "メッセージ履歴はありません";
 
-  // 클립 버튼 클릭 시 숨겨진 파일 input 클릭 트리거
   const handleClipClick = () => {
     fileInputRef.current?.click();
   };
 
-  // 파일이 선택되었을 때 실행
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && onFileSelect) {
       onFileSelect(file);
-      e.target.value = ""; // 같은 파일 다시 선택 가능하도록 초기화
+      e.target.value = "";
     }
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-white relative min-h-0 overflow-x-hidden">
+    // 💡 최상위 컨테이너에 w-full h-full flex-1과 flex 구조를 명확히 부여
+    <div className="flex-1 w-full h-full flex flex-col bg-white relative min-h-0 overflow-hidden">
       {/* Header */}
-      <div className="px-3 py-3 flex items-center justify-between border-b border-slate-100 bg-white z-10 shrink-0">
+      <div className="px-3 py-3 flex items-center justify-between border-b border-slate-100 bg-white z-10 shrink-0 w-full">
         <div className="flex items-center gap-2">
           <button
             onClick={onBack}
@@ -109,8 +112,8 @@ export default function ChatWindowView({
         </button>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-white min-h-0">
+      {/* Messages (스크롤 컨테이너 - 가로 폭 100% 확보) */}
+      <div className="flex-1 w-full overflow-y-auto p-4 space-y-3 bg-white min-h-0">
         {messages.length === 0 ? (
           <div className="h-full flex items-center justify-center text-xs text-slate-400">
             {emptyMessageText}
@@ -122,14 +125,15 @@ export default function ChatWindowView({
               sender={msg.sender}
               text={msg.text}
               time={msg.time}
+              read={msg.read}
             />
           ))
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
-      <div className="p-2.5 bg-white border-t border-slate-100 shrink-0">
-        {/* 숨겨진 파일 input 요소 */}
+      <div className="p-2.5 bg-white border-t border-slate-100 shrink-0 w-full">
         <input
           type="file"
           ref={fileInputRef}
@@ -140,11 +144,11 @@ export default function ChatWindowView({
 
         <form
           onSubmit={onSendMessage}
-          className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-xl border border-slate-200"
+          className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-xl border border-slate-200 w-full"
         >
           <button
             type="button"
-            onClick={handleClipClick} // 👈 클릭 시 파일 창 오픈
+            onClick={handleClipClick}
             className="p-1 text-slate-400 hover:text-[#0E2640] cursor-pointer"
           >
             <Paperclip className="w-4 h-4" />
@@ -154,12 +158,12 @@ export default function ChatWindowView({
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder={placeholderText}
-            className="flex-1 bg-transparent border-none text-xs text-[#0E2640] placeholder-slate-400 outline-none px-1"
+            className="flex-1 bg-transparent border-none text-xs text-[#0E2640] placeholder-slate-400 outline-none px-1 min-w-0"
           />
           <button
             type="submit"
             disabled={!inputMessage.trim()}
-            className={`p-1.5 rounded-lg text-white cursor-pointer ${
+            className={`p-1.5 rounded-lg text-white cursor-pointer shrink-0 ${
               inputMessage.trim()
                 ? "bg-[#0E2640]"
                 : "bg-slate-200 cursor-not-allowed"

@@ -2,7 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import { Search } from "lucide-react";
-import { getSafeImageUrl } from "@/lib/utils"; // 👈 유틸 함수가 있는 경로에 맞게 확인
+import { getSafeImageUrl } from "@/lib/utils";
 
 interface ChatItem {
   id: string;
@@ -11,6 +11,7 @@ interface ChatItem {
   lastMessage: string;
   time: string;
   unread: boolean;
+  unreadCount: number; // 👈 1. 인터페이스에 안 읽은 개수 속성 추가
   avatar: string;
 }
 
@@ -23,7 +24,7 @@ interface ChatListViewProps {
   setSearchQuery: (value: string) => void;
   onSelectChat: (chatId: string) => void;
   unifiedImageUrl?: string;
-  userRole?: "student" | "tutor" | string; // 💡 유저 역할 추가
+  userRole?: "student" | "tutor" | string;
 }
 
 export default function ChatListView({
@@ -36,7 +37,6 @@ export default function ChatListView({
   onSelectChat,
   userRole,
 }: ChatListViewProps) {
-  // 💡 튜터(한국인)는 한국어, 튜티(일본인)는 일본어 적용
   const isTutor = userRole === "tutor";
 
   const titleText = isTutor ? "채팅" : "メッセージ";
@@ -48,7 +48,8 @@ export default function ChatListView({
     : "チャットルームがありません";
 
   const filteredChats = chats.filter((chat) => {
-    if (unreadOnly && !chat.unread) return false;
+    // 💡 unreadOnly 필터링 기준을 chat.unread 또는 chat.unreadCount > 0으로 설정
+    if (unreadOnly && !chat.unread && chat.unreadCount === 0) return false;
     if (searchQuery.trim()) {
       return (
         chat.name.includes(searchQuery.trim()) ||
@@ -136,9 +137,20 @@ export default function ChatListView({
                     {chat.time}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 truncate">
-                  {chat.lastMessage}
-                </p>
+
+                {/* 💡 최신 메시지와 안 읽은 개수(뱃지)를 좌우 배치 */}
+                <div className="flex justify-between items-center gap-2">
+                  <p className="text-[11px] text-slate-500 truncate">
+                    {chat.lastMessage}
+                  </p>
+
+                  {/* 💡 안 읽은 메시지가 있을 때만 붉은색 숫자 뱃지 표시 */}
+                  {chat.unreadCount > 0 && (
+                    <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full shrink-0 min-w-[16px] text-center">
+                      {chat.unreadCount}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           ))

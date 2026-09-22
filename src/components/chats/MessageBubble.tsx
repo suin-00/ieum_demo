@@ -1,3 +1,4 @@
+// src/components/chats/MessageBubble.tsx
 import React from "react";
 import Image from "next/image";
 
@@ -5,84 +6,108 @@ interface MessageBubbleProps {
   sender: "user" | "tutor";
   text: string;
   time: string;
+  read: boolean;
+  images?: string[];
 }
 
 export default function MessageBubble({
   sender,
   text,
   time,
+  read,
+  images,
 }: MessageBubbleProps) {
   const isUser = sender === "user";
 
-  // 1. [파일] 형식인지 확인하고 파일 이름과 URL 분리하기
-  const isFileMessage = text.startsWith("[파일]");
-  let fileName = "";
+  // 파일 메시지 형태("[파일] 이름:::URL") 파싱 처리
+  const displayContent = text;
   let fileUrl = "";
+  let fileName = "";
 
-  if (isFileMessage) {
-    const cleanText = text.replace("[파일] ", "");
-    const parts = cleanText.split(":::");
+  if (text.startsWith("[파일]")) {
+    const parts = text.replace("[파일] ", "").split(":::");
     fileName = parts[0];
     fileUrl = parts[1];
   }
 
-  // 2. 이미지 확장자 파일인지 판별 (대소문자 구분 없이)
-  const isImageFile =
-    isFileMessage && /\.(jpg|jpeg|png|gif|webp)$/i.test(fileName);
-
   return (
     <div
-      className={`flex flex-col ${isUser ? "items-end" : "items-start"} mb-2`}
+      className={`flex flex-col w-full ${isUser ? "items-end" : "items-start"}`}
     >
+      {/* 1. 말풍선 본체 */}
       <div
-        className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
-          isUser
-            ? "bg-[#1e314a] text-white rounded-br-none"
-            : "bg-[#d8e8f2] text-[#0E2640] rounded-bl-none"
+        className={`flex items-end max-w-[75%] ${
+          isUser ? "flex-row-reverse" : "flex-row"
         }`}
       >
-        {isFileMessage ? (
-          <div className="space-y-1.5">
-            {isImageFile ? (
-              // 이미지 파일인 경우 채팅창 내에 미리보기 렌더링
-              <a
-                href={fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                /* 1번 방법 적용: 
-                  fill 속성을 사용하는 Image의 부모 요소는 반드시 relative 속성과 
-                  명확한 width/height(또는 aspect-ratio)가 지정되어 있어야 합니다.
-                */
-                className="relative block w-48 h-36 overflow-hidden rounded-lg hover:opacity-95 transition"
-              >
+        <div
+          className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+            isUser ? "rounded-br-none shadow-xs" : "rounded-bl-none"
+          }`}
+          style={{
+            display: "inline-block",
+            wordBreak: "break-word",
+            overflowWrap: "break-word",
+            // 💡 내가 보내는 말풍선(#1e314a), 상대가 보내는 말풍선(#d8e8f2) 색상 및 텍스트 색상 적용
+            backgroundColor: isUser ? "#1e314a" : "#d8e8f2",
+            color: isUser ? "#ffffff" : "#0E2640",
+          }}
+        >
+          {fileUrl ? (
+            <div className="space-y-2">
+              <p className="whitespace-pre-wrap m-0 text-xs font-semibold underline truncate max-w-[200px]">
+                {fileName}
+              </p>
+              {fileUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i) ? (
                 <Image
                   src={fileUrl}
-                  alt={fileName || "채팅 이미지"}
-                  fill
-                  className="object-cover rounded-lg"
-                  sizes="(max-width: 768px) 100vw, 200px"
+                  alt={fileName}
+                  width={120}
+                  height={100}
+                  className="w-28 h-24 object-cover rounded-lg border border-black/5 cursor-pointer"
+                  referrerPolicy="no-referrer"
                 />
-              </a>
-            ) : (
-              // 일반 파일인 경우 다운로드 링크 형태로 렌더링
-              <a
-                href={fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`flex items-center gap-1.5 underline text-xs break-all ${
-                  isUser ? "text-white" : "text-blue-600"
-                }`}
-              >
-                📎 {fileName}
-              </a>
-            )}
-          </div>
-        ) : (
-          // 일반 텍스트 메시지
-          <p className="whitespace-pre-wrap wrap-break-word">{text}</p>
+              ) : null}
+            </div>
+          ) : (
+            <p className="whitespace-pre-wrap m-0">{text}</p>
+          )}
+
+          {images && images.length > 0 && (
+            <div className="flex gap-2 mt-2.5">
+              {images.map((img, i) => (
+                <Image
+                  key={i}
+                  src={img}
+                  alt="첨부 이미지"
+                  width={96}
+                  height={80}
+                  className="w-24 h-20 object-cover rounded-lg border border-black/5"
+                  referrerPolicy="no-referrer"
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 2. 하단 정보 영역: [시간] [아이보리색 '1'] */}
+      <div
+        className={`flex items-center gap-1.5 mt-1.5 px-1 ${
+          isUser ? "flex-row-reverse" : "flex-row"
+        }`}
+      >
+        <span className="text-[11px] text-slate-400 font-medium">{time}</span>
+
+        {isUser && !read && (
+          <span
+            className="text-[10px] font-bold select-none shrink-0"
+            style={{ color: "#f0ddbd" }}
+          >
+            1
+          </span>
         )}
       </div>
-      <span className="text-[9px] text-slate-400 mt-1 px-1">{time}</span>
     </div>
   );
 }
