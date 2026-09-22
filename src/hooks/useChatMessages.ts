@@ -178,7 +178,7 @@ export function useChatMessages(
 
       // 2. 업로드된 파일의 Public URL 가져오기
       const { data: publicUrlData } = supabase.storage
-        .from("chat-files")
+        .from("CHAT-FILES")
         .getPublicUrl(filePath);
 
       const fileUrl = publicUrlData.publicUrl;
